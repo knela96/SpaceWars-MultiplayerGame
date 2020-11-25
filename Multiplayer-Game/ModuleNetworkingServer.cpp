@@ -225,12 +225,6 @@ void ModuleNetworkingServer::onUpdate()
 
 				if (clientProxy.secondsSinceLastReceivedPacket > DISCONNECT_TIMEOUT_SECONDS)
 				{
-					OutputMemoryStream packet;
-					packet << PROTOCOL_ID;
-					packet << ServerMessage::Unwelcome;
-
-					sendPacket(packet, clientProxy.address);
-				
 					destroyClientProxy(&clientProxy);
 				}
 
