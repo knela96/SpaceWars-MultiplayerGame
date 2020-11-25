@@ -112,6 +112,7 @@ void ModuleNetworkingClient::onPacketReceived(const InputMemoryStream &packet, c
 
 	ServerMessage message;
 	packet >> message;
+	WLOG("Packet - %s", playerName.c_str());
 
 	if (state == ClientState::Connecting)
 	{
@@ -133,9 +134,9 @@ void ModuleNetworkingClient::onPacketReceived(const InputMemoryStream &packet, c
 	{
 		if (message == ServerMessage::Ping)
 		{
+			WLOG("Received Ping from servr - %s",playerName.c_str());
 			secondsSinceLastReceivedPacket = 0.0f;
 		}
-
 		// TODO(you): World state replication lab session
 
 		// TODO(you): Reliability on top of UDP lab session

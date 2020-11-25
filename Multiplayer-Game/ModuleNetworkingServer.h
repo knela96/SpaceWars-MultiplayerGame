@@ -55,6 +55,7 @@ private:
 		// TODO(you): Reliability on top of UDP lab session
 
 		float secondsSinceLastReceivedPacket = 0.0f;
+		float secondsSinceLastSendPacket = 0.0f;
 
 		uint32 nextExpectedInputSequenceNumber = 0;
 		InputController gamepad;
@@ -122,9 +123,7 @@ private:
 	uint16 listenPort = 0;
 
 
-
 	// TODO(you): UDP virtual connection lab session
-	float secondsSinceLastSendPacket = 0.0f;
 };
 
 
