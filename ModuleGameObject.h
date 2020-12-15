@@ -91,7 +91,6 @@ void Destroy(GameObject *gameObject);
 void Destroy(GameObject *gameObject, float delaySeconds);
 
 void ProcessCreatePacket(GameObject* gameObject, const InputMemoryStream& packet);
-void ProcessUpdatePacket(GameObject* gameObject, const InputMemoryStream& packet);
 
 inline bool IsValid(GameObject *gameObject)
 {

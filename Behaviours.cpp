@@ -37,6 +37,7 @@ void Laser::update()
 
 void Spaceship::start()
 {
+	//CHECK
 	gameObject->tag = (uint32)(Random.next() * UINT_MAX);
 
 	lifebar = Instantiate();
@@ -82,6 +83,8 @@ void Spaceship::onInput(const InputController &input)
 			laser->sprite = App->modRender->addSprite(laser);
 			laser->sprite->order = 3;
 			laser->sprite->texture = App->modResources->laser;
+			laser->collider = App->modCollision->addCollider(ColliderType::Laser,laser); 
+			laser->collider->isTrigger = true;
 
 			Laser *laserBehaviour = App->modBehaviour->addLaser(laser);
 			laserBehaviour->isServer = isServer;

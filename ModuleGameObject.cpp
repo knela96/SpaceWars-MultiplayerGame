@@ -147,6 +147,9 @@ void ProcessCreatePacket(GameObject* gameObject, const InputMemoryStream& packet
 	else if (!std::strcmp(texture_filename.c_str(), App->modResources->spacecraft3->filename)) {
 		gameObject->sprite->texture = App->modResources->spacecraft3;
 	}
+	else if (!std::strcmp(texture_filename.c_str(), App->modResources->laser->filename)) {
+		gameObject->sprite->texture = App->modResources->laser;
+	}
 
 	packet >> gameObject->sprite->color.r;
 	packet >> gameObject->sprite->color.g;
@@ -163,15 +166,15 @@ void ProcessCreatePacket(GameObject* gameObject, const InputMemoryStream& packet
 		// Create behaviour
 		Spaceship* spaceshipBehaviour = App->modBehaviour->addSpaceship(gameObject);
 		gameObject->behaviour = spaceshipBehaviour;
-		gameObject->behaviour->isServer = true;
+		gameObject->behaviour->isServer = false;
 	}
 	else if (col_type == ColliderType::Laser){
 		gameObject->collider = App->modCollision->addCollider(ColliderType::Laser, gameObject);
 		gameObject->collider->isTrigger = true; // NOTE(jesus): This object will receive onCollisionTriggered events
+
+		// Create behaviour
+		Laser* laserBehaviour = App->modBehaviour->addLaser(gameObject);
+		laserBehaviour->isServer = false;
+		gameObject->behaviour = laserBehaviour;
 	}
-}
-
-void ProcessUpdatePacket(GameObject* gameObject, const InputMemoryStream& packet)
-{
-
 }

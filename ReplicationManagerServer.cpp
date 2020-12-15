@@ -35,7 +35,8 @@ void ReplicationManagerServer::write(OutputMemoryStream& packet)
 			packet << go->sprite->color.g;
 			packet << go->sprite->color.b;
 			packet << go->sprite->color.a;
-			packet << go->collider->type;
+			if (go->collider)
+				packet << go->collider->type;
 		}
 		else if(command.second == ReplicationAction::Update)
 		{
