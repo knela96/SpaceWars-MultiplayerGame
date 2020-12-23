@@ -14,15 +14,12 @@ void ReplicationManagerClient::read(const InputMemoryStream& packet)
 			GameObject* go = Instantiate();
 			App->modLinkingContext->registerNetworkGameObjectWithNetworkId(go, networkID);
 
-			ProcessCreatePacket(go, packet);
+			readGO(go, packet, ReplicationAction::Create);
 		}
 		else if (action == ReplicationAction::Update)
 		{
 			GameObject* go = App->modLinkingContext->getNetworkGameObject(networkID);
-
-			packet >> go->position.x;
-			packet >> go->position.y;
-			packet >> go->angle;
+			readGO(go, packet, ReplicationAction::Update);
 		}
 		else if (action == ReplicationAction::Destroy)
 		{

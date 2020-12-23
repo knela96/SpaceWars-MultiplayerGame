@@ -123,7 +123,56 @@ void Destroy(GameObject * gameObject, float delaySeconds)
 	ModuleGameObject::Destroy(gameObject, delaySeconds);
 }
 
-void ProcessCreatePacket(GameObject* gameObject, const InputMemoryStream& packet) {
+void writeGO(GameObject* go, OutputMemoryStream& packet, ReplicationAction action)
+{
+	switch (action) {
+	case ReplicationAction::Create:
+		packet << go->position.x;
+		packet << go->position.y;
+		packet << go->angle;
+		packet << go->size.x;
+		packet << go->size.y;
+		packet << go->tag;
+		packet << std::string(go->sprite->texture->filename);
+		packet << go->sprite->order;
+		packet << go->sprite->color.r;
+		packet << go->sprite->color.g;
+		packet << go->sprite->color.b;
+		packet << go->sprite->color.a;
+		if (go->collider)
+			packet << go->collider->type;
+		else
+			packet << ColliderType::None;
+
+		if (go->animation)
+			packet << true;
+		break;
+	case ReplicationAction::Update:
+		packet << go->position.x;
+		packet << go->position.y;
+		packet << go->angle;
+		go->behaviour->write(packet);
+		break;
+	};
+}
+
+void readGO(GameObject* go, const InputMemoryStream& packet, ReplicationAction action)
+{
+	switch (action) {
+	case ReplicationAction::Create:
+		ProcessCreatePacket(go, packet);
+		break;
+	case ReplicationAction::Update:
+		packet >> go->position.x;
+		packet >> go->position.y;
+		packet >> go->angle;
+		go->behaviour->read(packet);
+		break;
+	};
+}
+
+
+void ProcessCreatePacket(GameObject * gameObject, const InputMemoryStream & packet) {
 
 	// Create a new game object with the player properties
 	packet >> gameObject->position.x;
@@ -150,6 +199,11 @@ void ProcessCreatePacket(GameObject* gameObject, const InputMemoryStream& packet
 	else if (!std::strcmp(texture_filename.c_str(), App->modResources->laser->filename)) {
 		gameObject->sprite->texture = App->modResources->laser;
 	}
+	else if (!std::strcmp(texture_filename.c_str(), App->modResources->explosion1->filename)) {
+		gameObject->sprite->texture = App->modResources->explosion1;
+	}
+
+	packet >> gameObject->sprite->order;
 
 	packet >> gameObject->sprite->color.r;
 	packet >> gameObject->sprite->color.g;
@@ -168,7 +222,7 @@ void ProcessCreatePacket(GameObject* gameObject, const InputMemoryStream& packet
 		gameObject->behaviour = spaceshipBehaviour;
 		gameObject->behaviour->isServer = false;
 	}
-	else if (col_type == ColliderType::Laser){
+	else if (col_type == ColliderType::Laser) {
 		gameObject->collider = App->modCollision->addCollider(ColliderType::Laser, gameObject);
 		gameObject->collider->isTrigger = true; // NOTE(jesus): This object will receive onCollisionTriggered events
 
@@ -177,4 +231,15 @@ void ProcessCreatePacket(GameObject* gameObject, const InputMemoryStream& packet
 		laserBehaviour->isServer = false;
 		gameObject->behaviour = laserBehaviour;
 	}
+	else if (col_type == ColliderType::None) {
+		bool hasAnimation = false;
+		packet >> hasAnimation;
+
+		if (hasAnimation) {
+			gameObject->animation = App->modRender->addAnimation(gameObject);
+			gameObject->animation->clip = App->modResources->explosionClip;
+			App->modSound->playAudioClip(App->modResources->audioClipExplosion);
+		}
+	}
+
 }

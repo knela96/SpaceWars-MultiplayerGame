@@ -66,8 +66,6 @@ public:
 
 	static void Destroy(GameObject * gameObject, float delaySeconds);
 
-
-
 	GameObject gameObjects[MAX_GAME_OBJECTS] = {};
 
 private:
@@ -90,7 +88,12 @@ void Destroy(GameObject *gameObject);
 
 void Destroy(GameObject *gameObject, float delaySeconds);
 
+void writeGO(GameObject* gameObject, OutputMemoryStream& packet, ReplicationAction action);
+
+void readGO(GameObject* gameObject, const InputMemoryStream& packet, ReplicationAction action);
+
 void ProcessCreatePacket(GameObject* gameObject, const InputMemoryStream& packet);
+
 
 inline bool IsValid(GameObject *gameObject)
 {
