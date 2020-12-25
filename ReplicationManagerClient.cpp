@@ -5,8 +5,8 @@
 void ReplicationManagerClient::read(const InputMemoryStream& packet)
 {
 	while (packet.RemainingByteCount() > 0) {
-		uint32 networkID;
 		ReplicationAction action;
+		uint32 networkID;
 		packet >> networkID;
 		packet >> action;
 
@@ -29,3 +29,5 @@ void ReplicationManagerClient::read(const InputMemoryStream& packet)
 		}
 	}
 }
+
+

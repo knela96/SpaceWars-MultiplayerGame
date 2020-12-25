@@ -36,6 +36,8 @@ private:
 
 	void onDisconnect() override;
 
+	void InputReconciliation(const uint32& currentRequest, const InputMemoryStream& packet);
+
 
 
 	//////////////////////////////////////////////////////////////////////

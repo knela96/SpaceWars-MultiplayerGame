@@ -146,6 +146,9 @@ void writeGO(GameObject* go, OutputMemoryStream& packet, ReplicationAction actio
 
 		if (go->animation)
 			packet << true;
+		else
+			packet << false;
+
 		break;
 	case ReplicationAction::Update:
 		packet << go->position.x;
@@ -231,15 +234,14 @@ void ProcessCreatePacket(GameObject * gameObject, const InputMemoryStream & pack
 		laserBehaviour->isServer = false;
 		gameObject->behaviour = laserBehaviour;
 	}
-	else if (col_type == ColliderType::None) {
-		bool hasAnimation = false;
-		packet >> hasAnimation;
 
-		if (hasAnimation) {
-			gameObject->animation = App->modRender->addAnimation(gameObject);
-			gameObject->animation->clip = App->modResources->explosionClip;
-			App->modSound->playAudioClip(App->modResources->audioClipExplosion);
-		}
+	bool hasAnimation = false;
+	packet >> hasAnimation;
+
+	if (hasAnimation) {
+		gameObject->animation = App->modRender->addAnimation(gameObject);
+		gameObject->animation->clip = App->modResources->explosionClip;
+		App->modSound->playAudioClip(App->modResources->audioClipExplosion);
 	}
 
 }

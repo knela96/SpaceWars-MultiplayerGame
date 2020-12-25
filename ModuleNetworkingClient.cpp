@@ -138,7 +138,11 @@ void ModuleNetworkingClient::onPacketReceived(const InputMemoryStream &packet, c
 		else if (message == ServerMessage::Replication)
 		{
 			ReplicationManagerClient manager;
+			uint32 currentRequest = 0;
+			packet >> currentRequest;
+
 			manager.read(packet);
+			InputReconciliation(currentRequest, packet);
 		}
 	}
 }
@@ -168,7 +172,18 @@ void ModuleNetworkingClient::onUpdate()
 	}
 	else if (state == ClientState::Connected)
 	{
-		// TODO(you): UDP virtual connection lab session
+		secondsSinceLastReceivedPacket += Time.deltaTime;
+
+		if (secondsSinceLastReceivedPacket > DISCONNECT_TIMEOUT_SECONDS)
+		{
+			disconnect();
+		}
+
+		//Predicts Input
+		GameObject* go = App->modLinkingContext->getNetworkGameObject(networkId);
+		if (go != nullptr)
+			if(go->behaviour != nullptr)
+				go->behaviour->onInput(Input);
 
 		// Process more inputs if there's space
 		if (inputDataBack - inputDataFront < ArrayCount(inputData))
@@ -194,7 +209,6 @@ void ModuleNetworkingClient::onUpdate()
 			packet << ClientMessage::Input;
 
 			// TODO(you): Reliability on top of UDP lab session
-
 			for (uint32 i = inputDataFront; i < inputDataBack; ++i)
 			{
 				InputPacketData &inputPacketData = inputData[i % ArrayCount(inputData)];
@@ -204,18 +218,7 @@ void ModuleNetworkingClient::onUpdate()
 				packet << inputPacketData.buttonBits;
 			}
 
-			// Clear the queue
-			inputDataFront = inputDataBack;
-
 			sendPacket(packet, serverAddress);
-		}
-
-		// TODO(you): Latency management lab session
-		secondsSinceLastReceivedPacket += Time.deltaTime;
-
-		if (secondsSinceLastReceivedPacket > DISCONNECT_TIMEOUT_SECONDS)
-		{
-			disconnect();
 		}
 
 		secondsSinceLastSendPacket += Time.deltaTime;
@@ -264,4 +267,23 @@ void ModuleNetworkingClient::onDisconnect()
 	}
 
 	App->modRender->cameraPosition = {};
+}
+
+void ModuleNetworkingClient::InputReconciliation(const uint32& currentRequest, const InputMemoryStream& packet) {
+	GameObject* go = App->modLinkingContext->getNetworkGameObject(networkId);
+
+	if (go && currentRequest > inputDataFront)
+	{
+		InputController ServerInputs;
+		for (uint32 i = inputDataFront; i < currentRequest; ++i)
+		{
+			InputPacketData& inputPacketData = inputData[i % ArrayCount(inputData)];
+			inputControllerFromInputPacketData(inputPacketData, ServerInputs);
+
+			if (go->behaviour)
+				go->behaviour->onInput(ServerInputs);
+		}
+
+		inputDataFront = currentRequest;
+	}
 }

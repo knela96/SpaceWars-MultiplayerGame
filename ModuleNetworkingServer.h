@@ -58,6 +58,7 @@ private:
 		float secondsSinceLastSendPacket = 0.0f;
 		float secondsSinceLastReplication = 0.0f;
 
+		uint32 lastInputSequenceNumberReceived = 0;
 		uint32 nextExpectedInputSequenceNumber = 0;
 		InputController gamepad;
 
