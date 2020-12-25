@@ -17,6 +17,10 @@ void Laser::update()
 	const float pixelsPerSecond = 1000.0f;
 	gameObject->position += vec2FromDegrees(gameObject->angle) * pixelsPerSecond * Time.deltaTime;
 
+
+	//if (App->modNetClient->GetNetworkID() != gameObject->networkId && !isServer && gameObject->networkInterpolationEnabled)
+	//	gameObject->Interpolate();
+
 	if (isServer)
 	{
 		const float neutralTimeSeconds = 0.1f;
@@ -39,6 +43,10 @@ void Spaceship::start()
 {
 	//CHECK
 	gameObject->tag = (uint32)(Random.next() * UINT_MAX);
+
+	//Initialize Current Position
+	gameObject->last_position = gameObject->new_position = gameObject->position;
+	gameObject->last_angle = gameObject->new_angle = gameObject->angle;
 
 	lifebar = Instantiate();
 	lifebar->sprite = App->modRender->addSprite(lifebar);
@@ -102,6 +110,10 @@ void Spaceship::update()
 	lifebar->position = gameObject->position + vec2{ -50.0f, -50.0f };
 	lifebar->size = vec2{ lifeRatio * 80.0f, 5.0f };
 	lifebar->sprite->color = lerp(colorDead, colorAlive, lifeRatio);
+
+	// Interpolation
+	if (App->modNetClient->GetNetworkID() != gameObject->networkId && !isServer && gameObject->networkInterpolationEnabled)
+		gameObject->Interpolate();
 }
 
 void Spaceship::destroy()

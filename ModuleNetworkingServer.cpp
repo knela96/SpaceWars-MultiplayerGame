@@ -253,7 +253,6 @@ void ModuleNetworkingServer::onUpdate()
 
 				if (clientProxy.secondsSinceLastReplication >= REPLICATION_INTERVAL_SECONDS)
 				{
-
 					OutputMemoryStream packet;
 					packet << PROTOCOL_ID;
 					packet << ServerMessage::Replication;
