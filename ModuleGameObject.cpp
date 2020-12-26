@@ -166,9 +166,15 @@ void readGO(GameObject* go, const InputMemoryStream& packet, ReplicationAction a
 		ProcessCreatePacket(go, packet);
 		break;
 	case ReplicationAction::Update:
-		packet >> go->position.x;
-		packet >> go->position.y;
-		packet >> go->angle;
+
+		//Store last values for Interpolation
+		go->elapsed_time = 0.0f;
+		go->last_position = go->position;
+		go->last_angle = go->angle;
+
+		packet >> go->new_position.x;
+		packet >> go->new_position.y;
+		packet >> go->new_angle;
 		go->behaviour->read(packet);
 		break;
 	};
@@ -244,4 +250,15 @@ void ProcessCreatePacket(GameObject * gameObject, const InputMemoryStream & pack
 		App->modSound->playAudioClip(App->modResources->audioClipExplosion);
 	}
 
+}
+
+void GameObject::Interpolate()
+{
+	float interpolationValue = elapsed_time / REPLICATION_INTERVAL_SECONDS;
+	if (interpolationValue > 1)
+		interpolationValue = 1.0f;
+
+	position = lerp(last_position, new_position, interpolationValue);
+	angle = lerp(last_angle, new_angle, interpolationValue);
+	elapsed_time += Time.deltaTime;
 }

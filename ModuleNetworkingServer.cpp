@@ -120,47 +120,38 @@ void ModuleNetworkingServer::onPacketReceived(const InputMemoryStream &packet, c
 					vec2 initialPosition = 500.0f * vec2{ Random.next() - 0.5f, Random.next() - 0.5f};
 					float initialAngle = 360.0f * Random.next();
 					proxy->gameObject = spawnPlayer(spaceshipType, initialPosition, initialAngle);
+				
+					// Send welcome to the new player
+					OutputMemoryStream welcomePacket;
+					welcomePacket << PROTOCOL_ID;
+					welcomePacket << ServerMessage::Welcome;
+					welcomePacket << proxy->clientId;
+					welcomePacket << proxy->gameObject->networkId;
+					sendPacket(welcomePacket, fromAddress);
+
+					// Send all network objects to the new player
+					uint16 networkGameObjectsCount;
+					GameObject* networkGameObjects[MAX_NETWORK_OBJECTS];
+					App->modLinkingContext->getNetworkGameObjects(networkGameObjects, &networkGameObjectsCount);
+					for (uint16 i = 0; i < networkGameObjectsCount; ++i)
+					{
+						GameObject* gameObject = networkGameObjects[i];
+
+						if (gameObject != proxy->gameObject)
+							proxy->replicationManagerServer.create(gameObject->networkId);
+					}
+
+					LOG("Message received: hello - from player %s", proxy->name.c_str());
 				}
 				else
 				{
-					// NOTE(jesus): Server is full...
+					OutputMemoryStream unwelcomePacket;
+					unwelcomePacket << PROTOCOL_ID;
+					unwelcomePacket << ServerMessage::Unwelcome;
+					sendPacket(unwelcomePacket, fromAddress);
+
+					WLOG("Message received: UNWELCOMED hello - server is full");
 				}
-			}
-
-			if (proxy != nullptr)
-			{
-				// Send welcome to the new player
-				OutputMemoryStream welcomePacket;
-				welcomePacket << PROTOCOL_ID;
-				welcomePacket << ServerMessage::Welcome;
-				welcomePacket << proxy->clientId;
-				welcomePacket << proxy->gameObject->networkId;
-				sendPacket(welcomePacket, fromAddress);
-
-				// Send all network objects to the new player
-				uint16 networkGameObjectsCount;
-				GameObject *networkGameObjects[MAX_NETWORK_OBJECTS];
-				App->modLinkingContext->getNetworkGameObjects(networkGameObjects, &networkGameObjectsCount);
-				for (uint16 i = 0; i < networkGameObjectsCount; ++i)
-				{
-					GameObject *gameObject = networkGameObjects[i];
-					
-					// TODO(you): World state replication lab session
-
-					if (gameObject != proxy->gameObject)
-						proxy->replicationManagerServer.create(gameObject->networkId);
-				}
-
-				LOG("Message received: hello - from player %s", proxy->name.c_str());
-			}
-			else
-			{
-				OutputMemoryStream unwelcomePacket;
-				unwelcomePacket << PROTOCOL_ID;
-				unwelcomePacket << ServerMessage::Unwelcome;
-				sendPacket(unwelcomePacket, fromAddress);
-
-				WLOG("Message received: UNWELCOMED hello - server is full");
 			}
 		}
 		else if (message == ClientMessage::Input)
@@ -256,7 +247,6 @@ void ModuleNetworkingServer::onUpdate()
 
 				if (clientProxy.secondsSinceLastReplication >= REPLICATION_INTERVAL_SECONDS)
 				{
-
 					OutputMemoryStream packet;
 					packet << PROTOCOL_ID;
 					packet << ServerMessage::Replication;
