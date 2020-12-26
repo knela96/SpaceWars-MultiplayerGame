@@ -140,6 +140,7 @@ void ModuleNetworkingClient::onPacketReceived(const InputMemoryStream &packet, c
 			ReplicationManagerClient manager;
 			uint32 currentRequest = 0;
 			packet >> currentRequest;
+			packet >> inputDataFront;
 
 			manager.read(packet);
 			InputReconciliation(currentRequest, packet);
