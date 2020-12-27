@@ -36,3 +36,14 @@ void ReplicationManagerServer::write(OutputMemoryStream& packet)
 
 	commands.clear();
 }
+
+void ReplicationDeliveryDelegate::onDeliveryFailure(DeliveryManager* deliveryManager)
+{
+
+}
+
+
+void ReplicationDeliveryDelegate::onDeliverySuccess(DeliveryManager* deliveryManager)
+{
+
+}

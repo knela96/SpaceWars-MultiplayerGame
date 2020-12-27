@@ -2,27 +2,30 @@
 
 #include <vector>
 
-// TODO(you): Reliability on top of UDP lab session
 class DeliveryManager;
 
 class DeliveryDelegate {
 public:
 
-	virtual void onDeliverySucces(DeliveryManager* deliveryManager) = 0;
+	virtual void onDeliverySuccess(DeliveryManager* deliveryManager) = 0;
 	virtual void onDeliveryFailure(DeliveryManager* deliveryManager) = 0;
 };
 
 struct Delivery {
 	uint32 sequenceNumber = 0;
 	double dispatchTime = 0.0f;
-	DeliveryDelegate* delegate = nullptr;
+	DeliveryDelegate* d_delegate = nullptr;
+
+	~Delivery() {
+		delete d_delegate;
+	}
 };
 
 class DeliveryManager {
 public:
 
 	// For senders to write a new seq. numbers into a packet
-	Delivery* writeSequenceNumber(OutputMemoryStream& packet);
+	Delivery* writeSequenceNumber(OutputMemoryStream& packet, DeliveryDelegate* _delegate);
 
 	//For receivers to process the seq. number from an incoming packet
 	bool processSequenceNumber(const InputMemoryStream& packet);
@@ -39,15 +42,13 @@ public:
 
 private:
 
-	/*
-	Private members (sneder side)
-	- the next outgoing sequence number
-	- a list of pending deliveries
+	uint32 nextSequenceNumber = 0;
+	std::vector<Delivery*> pendingDeliveries;
 
-	Private members (receiver side)
-	- The next expected sequence number
-	- A list of sequence numbers pending ack
-	*/
-	uint32 deliveryCount = 0;
-	std::vector<Delivery*> deliveries;
+	// Private members (receiver site)
+	// - The next expected sequence number
+	// - A list of sequence numbers pending ack
+
+	uint32 expectedSequenceNumber = 0;
+	std::vector<uint32> pendingAckDeliveries;
 };

@@ -164,6 +164,7 @@ void ModuleNetworkingServer::onPacketReceived(const InputMemoryStream &packet, c
 				while (packet.RemainingByteCount() > 0)
 				{
 					InputPacketData inputData;
+					//packet >> ;
 					packet >> inputData.sequenceNumber;
 					packet >> inputData.horizontalAxis;
 					packet >> inputData.verticalAxis;
@@ -499,3 +500,12 @@ void NetworkDestroy(GameObject * gameObject, float delaySeconds)
 
 	App->modNetServer->destroyNetworkObject(gameObject, delaySeconds);
 }
+
+//void ServerDeliveryDelegate::onDeliverySucces(DeliveryManager* deliveryManager) {
+//	//this should make something
+//}
+//
+//void ServerDeliveryDelegate::onDeliveryFailure(DeliveryManager* deliveryManager)
+//{
+//	//this should make something aswell
+//}

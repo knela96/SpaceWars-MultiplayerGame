@@ -2,6 +2,7 @@
 
 #include "ModuleNetworking.h"
 #include "ReplicationManagerServer.h"
+#include "DeliveryManager.h"
 
 class ModuleNetworkingServer : public ModuleNetworking
 {
@@ -142,3 +143,9 @@ void NetworkUpdate(GameObject *gameObject);
 // machines.
 void NetworkDestroy(GameObject *gameObject);
 void NetworkDestroy(GameObject *gameObject, float delaySeconds);
+
+//class ServerDeliveryDelegate : public DeliveryDelegate {
+//
+//	void onDeliverySucces(DeliveryManager* deliveryManager);
+//	void onDeliveryFailure(DeliveryManager* deliveryManager);
+//};
