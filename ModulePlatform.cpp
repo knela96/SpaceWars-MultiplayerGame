@@ -358,6 +358,14 @@ bool ModulePlatform::preUpdate()
 					{
 						Win32ProcessKeyboardButton(&KeyboardInput.actionShoot, IsDown);
 					}
+					else if (VKCode == VK_F1 && IsDown)
+					{
+						App->modUI->setEnabled(!App->modUI->isEnabled());
+					}
+					else if (VKCode == VK_F4 && IsDown)
+					{
+						return false; // Finish the application
+					}
 				}
 			}
 			::TranslateMessage(&msg);

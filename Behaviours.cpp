@@ -145,6 +145,7 @@ void Spaceship::onCollisionTriggered(Collider &c1, Collider &c2)
 				position = gameObject->position;
 
 				NetworkDestroy(gameObject);
+				NetworkScoreUpdate(&c2.gameObject->tag);
 			}
 
 			GameObject *explosion = NetworkInstantiate();

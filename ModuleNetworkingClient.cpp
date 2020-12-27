@@ -1,5 +1,5 @@
 #include "ModuleNetworkingClient.h"
-
+#include <string> 
 
 //////////////////////////////////////////////////////////////////////
 // ModuleNetworkingClient public methods
@@ -54,6 +54,7 @@ void ModuleNetworkingClient::onStart()
 	secondsSinceLastReceivedPacket = 0.0f;
 	secondsSinceLastSendPacket = 0.0f;
 	spawned = false;
+	score = 0;
 }
 
 void ModuleNetworkingClient::onGui()
@@ -81,6 +82,7 @@ void ModuleNetworkingClient::onGui()
 			ImGui::Text("Spaceship info:");
 			ImGui::Text(" - Type: %u", spaceshipType);
 			ImGui::Text(" - Network id: %u", networkId);
+			ImGui::Text(" - Score: %u", score);
 
 			vec2 playerPosition = {};
 			GameObject *playerGameObject = App->modLinkingContext->getNetworkGameObject(networkId);
@@ -100,6 +102,15 @@ void ModuleNetworkingClient::onGui()
 			ImGui::Text("Input:");
 			ImGui::InputFloat("Delivery interval (s)", &inputDeliveryIntervalSeconds, 0.01f, 0.1f, 4);
 		}
+	}
+	if (ImGui::Begin("Score")) {
+		ImGui::Text("[Players]");
+		for (int i = 0; i < MAX_CLIENTS && scoreClients[i].name != ""; ++i) {
+			std::string s = scoreClients[i].name + ":	" + std::to_string(scoreClients[i].score);
+			ImGui::Text("%s", s.c_str());
+		}
+
+		ImGui::End();
 	}
 }
 
@@ -126,7 +137,13 @@ void ModuleNetworkingClient::onPacketReceived(const InputMemoryStream &packet, c
 		}
 		else if (message == ServerMessage::Unwelcome)
 		{
-			WLOG("ModuleNetworkingClient::onPacketReceived() - Unwelcome from server :-(");
+			if (packet.RemainingByteCount() > 0) {
+				App->modScreen->screenMainMenu->showInvalidUserName = true;
+				WLOG("Name already taken - Change your PlayerName :-(");
+			}
+			else {
+				WLOG("ModuleNetworkingClient::onPacketReceived() - Unwelcome from server :-(");
+			}
 			disconnect();
 		}
 	}
@@ -145,13 +162,27 @@ void ModuleNetworkingClient::onPacketReceived(const InputMemoryStream &packet, c
 			manager.read(packet);
 			InputReconciliation(currentRequest, packet);
 		}
+		else if (message == ServerMessage::Score)
+		{
+			int c = 0;
+			while (packet.RemainingByteCount() > 0) {
+				packet >> scoreClients[c].name;
+				packet >> scoreClients[c].score;
+				c++;
+			}
+
+			for (int i = c; i < MAX_CLIENTS; ++i) {
+				scoreClients[i].name = "";
+				scoreClients[i].score = 0;
+			}
+			std::sort(std::begin(scoreClients), std::end(scoreClients), [](const ScoreClient& a, const ScoreClient& b) {return a.score > b.score; });
+		}
 	}
 }
 
 void ModuleNetworkingClient::onUpdate()
 {
 	if (state == ClientState::Stopped) return;
-
 
 	// TODO(you): UDP virtual connection lab session
 	if (state == ClientState::Connecting)

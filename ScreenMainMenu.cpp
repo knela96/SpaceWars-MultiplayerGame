@@ -67,7 +67,6 @@ void ScreenMainMenu::gui()
 		ImGui::EndCombo();
 	}
 
-	static bool showInvalidUserName = false;
 
 	if (ImGui::Button("Connect to server"))
 	{
