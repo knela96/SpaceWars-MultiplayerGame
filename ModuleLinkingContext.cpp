@@ -25,8 +25,7 @@ void ModuleLinkingContext::registerNetworkGameObjectWithNetworkId(GameObject * g
 	ASSERT(arrayIndex < MAX_NETWORK_OBJECTS);
 
 	if (networkGameObjects[arrayIndex] != nullptr) {
-		networkGameObjects[arrayIndex] =  nullptr;
-		networkGameObjectsCount--;
+		unregisterNetworkGameObject(networkGameObjects[arrayIndex]);
 	}
 
 	ASSERT(networkGameObjects[arrayIndex] == nullptr);

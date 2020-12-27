@@ -149,18 +149,11 @@ void writeGO(GameObject* go, OutputMemoryStream& packet, ReplicationAction actio
 		else
 			packet << false;
 
-		//Send Asteroid properties on Creation
-		if (go->behaviour) {
-			if (go->collider->type == ColliderType::Asteroid)
-				go->behaviour->write(packet);
-		}
-
 		break;
 	case ReplicationAction::Update:
 		packet << go->position.x;
 		packet << go->position.y;
 		packet << go->angle;
-		packet << go->collider->type;
 		go->behaviour->write(packet);
 		break;
 	};
@@ -171,13 +164,9 @@ void readGO(GameObject* go, const InputMemoryStream& packet, ReplicationAction a
 	switch (action) {
 	case ReplicationAction::Create:
 		ProcessCreatePacket(go, packet);
-		//Read Asteroid properties on Creation
-		if (go->behaviour) {
-			if (go->collider->type == ColliderType::Asteroid)
-				go->behaviour->read(packet);
-		}
 		break;
 	case ReplicationAction::Update:
+
 		//Store last values for Interpolation
 		go->elapsed_time = 0.0f;
 		go->last_position = go->position;
@@ -186,40 +175,7 @@ void readGO(GameObject* go, const InputMemoryStream& packet, ReplicationAction a
 		packet >> go->new_position.x;
 		packet >> go->new_position.y;
 		packet >> go->new_angle;
-		int type = 0;
-		packet >> type;
 		go->behaviour->read(packet);
-		break;
-	};
-}
-
-void readDummy(GameObject* go, const InputMemoryStream& packet, ReplicationAction action)
-{
- 	switch (action) {
-	case ReplicationAction::Create:
-		ProcessCreatePacket(go, packet);
-		break;
-	case ReplicationAction::Update:
-		//Store last values for Interpolation
- 		go->elapsed_time = 0.0f;
-		go->last_position = go->position;
-		go->last_angle = go->angle;
-
-  		packet >> go->new_position.x;
-		packet >> go->new_position.y;
-		packet >> go->new_angle;
-		int type = 0;
-		packet >> type;
-		if (type == (int)ColliderType::Player) {
-			Spaceship sp;
-			go->behaviour = &sp;
-			go->behaviour->read(packet);
-		}
-		else {
-			Asteroid sp;
-			go->behaviour = &sp;
-			go->behaviour->read(packet);
-		}
 		break;
 	};
 }
@@ -239,7 +195,7 @@ void ProcessCreatePacket(GameObject * gameObject, const InputMemoryStream & pack
 	packet >> texture_filename;
 
 	gameObject->sprite = App->modRender->addSprite(gameObject);
-
+	gameObject->sprite->order = 5;
 	if (!std::strcmp(texture_filename.c_str(), App->modResources->spacecraft1->filename)) {
 		gameObject->sprite->texture = App->modResources->spacecraft1;
 	}
@@ -254,9 +210,6 @@ void ProcessCreatePacket(GameObject * gameObject, const InputMemoryStream & pack
 	}
 	else if (!std::strcmp(texture_filename.c_str(), App->modResources->explosion1->filename)) {
 		gameObject->sprite->texture = App->modResources->explosion1;
-	}
-	else if (!std::strcmp(texture_filename.c_str(), App->modResources->asteroid1->filename)) {
-		gameObject->sprite->texture = App->modResources->asteroid1;
 	}
 
 	packet >> gameObject->sprite->order;
@@ -286,15 +239,6 @@ void ProcessCreatePacket(GameObject * gameObject, const InputMemoryStream & pack
 		Laser* laserBehaviour = App->modBehaviour->addLaser(gameObject);
 		laserBehaviour->isServer = false;
 		gameObject->behaviour = laserBehaviour;
-	}
-	else if (col_type == ColliderType::Asteroid) {
-		gameObject->collider = App->modCollision->addCollider(ColliderType::Asteroid, gameObject);
-		gameObject->collider->isTrigger = true; 
-
-		// Create behaviour
-		Asteroid* asteroidBehaviour = App->modBehaviour->addAsteroid(gameObject);
-		gameObject->behaviour = asteroidBehaviour;
-		gameObject->behaviour->isServer = false;
 	}
 
 	bool hasAnimation = false;

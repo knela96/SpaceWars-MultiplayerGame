@@ -32,7 +32,6 @@ enum class BehaviourType : uint8
 	None,
 	Spaceship,
 	Laser,
-	Asteroid
 };
 
 
@@ -70,26 +69,4 @@ struct Spaceship : public Behaviour
 	void write(OutputMemoryStream &packet) override;
 
 	void read(const InputMemoryStream &packet) override;
-};
-
-struct Asteroid : public Behaviour
-{
-	static const uint8 MAX_HIT_POINTS = 2;
-	uint8 hitPoints = MAX_HIT_POINTS;
-
-	BehaviourType type() const override { return BehaviourType::Asteroid; }
-
-	void start() override;
-
-	void update() override;
-
-	void onCollisionTriggered(Collider& c1, Collider& c2) override;
-
-	void write(OutputMemoryStream& packet) override;
-
-	void read(const InputMemoryStream& packet) override;
-
-public:
-	float pixelsPerSecond = 100.0f;
-	uint8 asteroidType = 0;
 };

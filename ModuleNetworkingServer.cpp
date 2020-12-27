@@ -104,7 +104,6 @@ void ModuleNetworkingServer::onPacketReceived(const InputMemoryStream &packet, c
 
 				if (proxy != nullptr)
 				{
-					connectedUsers++;
 					std::string playerName;
 					uint8 spaceshipType;
 					packet >> playerName;
@@ -186,6 +185,8 @@ void ModuleNetworkingServer::onPacketReceived(const InputMemoryStream &packet, c
 			if (proxy != nullptr)
 				proxy->secondsSinceLastReceivedPacket = 0.0f;
 		}
+
+		// TODO(you): UDP virtual connection lab session
 	}
 }
 
@@ -331,7 +332,6 @@ void ModuleNetworkingServer::destroyClientProxy(ClientProxy *clientProxy)
 	// Destroy the object from all clients
 	if (IsValid(clientProxy->gameObject))
 	{
-		connectedUsers--;
 		destroyNetworkObject(clientProxy->gameObject);
 	}
 
@@ -376,41 +376,6 @@ GameObject * ModuleNetworkingServer::spawnPlayer(uint8 spaceshipType, vec2 initi
 	return gameObject;
 }
 
-GameObject* ModuleNetworkingServer::spawnAsteroid(uint8 asteroidType, vec2 initialPosition, float initialAngle)
-{
-	// Create a new game object with the player properties
-	GameObject* gameObject = NetworkInstantiate();
-	gameObject->position = initialPosition;
-	gameObject->angle = initialAngle;
-
-	// Create sprite
-	gameObject->sprite = App->modRender->addSprite(gameObject);
-	gameObject->sprite->order = 10;
-	if (asteroidType == 0) {
-		gameObject->size = { 100, 100 };
-		gameObject->sprite->texture = App->modResources->asteroid1;
-	}
-	else if (asteroidType == 1) {
-		gameObject->size = { 75, 75 };
-		gameObject->sprite->texture = App->modResources->asteroid1;
-	}
-	else {
-		gameObject->size = { 30, 30 };
-		gameObject->sprite->texture = App->modResources->asteroid1;
-	}
-
-	// Create collider
-	gameObject->collider = App->modCollision->addCollider(ColliderType::Asteroid, gameObject);
-	gameObject->collider->isTrigger = true; // NOTE(jesus): This object will receive onCollisionTriggered events
-
-	// Create behaviour
-	Asteroid* asteroidpBehaviour = App->modBehaviour->addAsteroid(gameObject);
-	asteroidpBehaviour->asteroidType = asteroidType;
-	gameObject->behaviour = asteroidpBehaviour;
-	gameObject->behaviour->isServer = true;
-
-	return gameObject;
-}
 
 //////////////////////////////////////////////////////////////////////
 // Update / destruction

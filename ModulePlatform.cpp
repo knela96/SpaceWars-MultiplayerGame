@@ -358,14 +358,6 @@ bool ModulePlatform::preUpdate()
 					{
 						Win32ProcessKeyboardButton(&KeyboardInput.actionShoot, IsDown);
 					}
-					else if (VKCode == VK_F1 && IsDown)
-					{
-						App->modUI->setEnabled(!App->modUI->isEnabled());
-					}
-					else if (VKCode == VK_F4 && IsDown)
-					{
-						return false; // Finish the application
-					}
 				}
 			}
 			::TranslateMessage(&msg);
@@ -418,14 +410,7 @@ bool ModulePlatform::preUpdate()
 		{
 			XINPUT_GAMEPAD *pad = &controllerState.Gamepad;
 
-			//Win32ProcessGamepadButton(&GamepadInput.actionUp, pad, XINPUT_GAMEPAD_Y);
 			Win32ProcessGamepadButton(&GamepadInput.actionShoot, pad, XINPUT_GAMEPAD_A);
-			//Win32ProcessGamepadButton(&GamepadInput.actionLeft, pad, XINPUT_GAMEPAD_X);
-			//Win32ProcessGamepadButton(&GamepadInput.actionRight, pad, XINPUT_GAMEPAD_B);
-			//Win32ProcessGamepadButton(&GamepadInput.leftShoulder, pad, XINPUT_GAMEPAD_LEFT_SHOULDER);
-			//Win32ProcessGamepadButton(&GamepadInput.rightShoulder, pad, XINPUT_GAMEPAD_RIGHT_SHOULDER);
-			//Win32ProcessGamepadButton(&GamepadInput.back, pad, XINPUT_GAMEPAD_BACK);
-			//Win32ProcessGamepadButton(&GamepadInput.start, pad, XINPUT_GAMEPAD_START);
 
 			GamepadInput.horizontalAxis = Win32ProcessGamepadThumb(pad->sThumbLX, XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE);
 			GamepadInput.verticalAxis = Win32ProcessGamepadThumb(pad->sThumbLY, XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE);

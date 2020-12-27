@@ -13,7 +13,7 @@ public:
 
 	void setListenPort(int port);
 
-	int getClientNum() { return connectedUsers; }
+
 
 private:
 
@@ -66,7 +66,6 @@ private:
 	};
 
 	ClientProxy clientProxies[MAX_CLIENTS];
-	int connectedUsers = 0;
 
 	ClientProxy * createClientProxy();
 
@@ -82,8 +81,6 @@ public:
 	//////////////////////////////////////////////////////////////////////
 
 	GameObject * spawnPlayer(uint8 spaceshipType, vec2 initialPosition, float initialAngle);
-
-	GameObject* spawnAsteroid(uint8 asteroidType, vec2 initialPosition, float initialAngle);
 
 
 

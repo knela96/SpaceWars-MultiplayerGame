@@ -3,7 +3,7 @@
 
 enum class ReplicationAction
 {
-	None,Create,Update,UpdateDummy,Destroy
+	None,Create,Update,Destroy
 };
 
 struct ReplicationCommand
