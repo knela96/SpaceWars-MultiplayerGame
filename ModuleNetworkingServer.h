@@ -13,7 +13,7 @@ public:
 
 	void setListenPort(int port);
 
-
+	int getClientNum() { return connectedUsers; }
 
 private:
 
@@ -66,6 +66,7 @@ private:
 	};
 
 	ClientProxy clientProxies[MAX_CLIENTS];
+	int connectedUsers = 0;
 
 	ClientProxy * createClientProxy();
 

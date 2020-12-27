@@ -63,17 +63,27 @@ void ScreenGame::update()
 
 void ScreenGame::GameLogic() {
 	static bool first = false;
+	static bool gameStart = false;
 	timeSpawn += Time.deltaTime;
+	if (isServer) {
+		if (App->modNetServer->getClientNum() > 1) {
+			if (gameStart && timeSpawn > 3) {
+				timeSpawn = 0;
 
-	if (isServer && timeSpawn > 3) {
-		timeSpawn = 0;
-
-		uint8 type = 3 * Random.next();
-		vec2 pos = vec2{ 0, 0 };
-		asteroids[0] = App->modNetServer->spawnAsteroid(type, pos,0);
-
-
+				uint8 type = 3 * Random.next();
+				vec2 pos = vec2{ 0, 0 };
+				asteroids[0] = App->modNetServer->spawnAsteroid(type, pos, 0);
+			}
+			else {
+				gameStart = true;
+			}
+		}
+		else {
+			gameStart = false;
+		}
+		
 	}
+	
 }
 
 void ScreenGame::gui()

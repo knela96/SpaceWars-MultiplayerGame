@@ -104,6 +104,7 @@ void ModuleNetworkingServer::onPacketReceived(const InputMemoryStream &packet, c
 
 				if (proxy != nullptr)
 				{
+					connectedUsers++;
 					std::string playerName;
 					uint8 spaceshipType;
 					packet >> playerName;
@@ -330,6 +331,7 @@ void ModuleNetworkingServer::destroyClientProxy(ClientProxy *clientProxy)
 	// Destroy the object from all clients
 	if (IsValid(clientProxy->gameObject))
 	{
+		connectedUsers--;
 		destroyNetworkObject(clientProxy->gameObject);
 	}
 

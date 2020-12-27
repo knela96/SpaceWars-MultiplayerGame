@@ -30,7 +30,7 @@ Behaviour *ModuleBehaviour::addBehaviour(BehaviourType behaviourType, GameObject
 	case BehaviourType::Laser:
 		return addLaser(parentGameObject);
 	case BehaviourType::Asteroid:
-		return addLaser(parentGameObject);
+		return addAsteroid(parentGameObject);
 	default:
 		return nullptr;
 	}

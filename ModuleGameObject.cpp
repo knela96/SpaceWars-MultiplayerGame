@@ -148,6 +148,13 @@ void writeGO(GameObject* go, OutputMemoryStream& packet, ReplicationAction actio
 			packet << true;
 		else
 			packet << false;
+
+		//Send Asteroid properties on Creation
+		if (go->behaviour) {
+			if (go->collider->type == ColliderType::Asteroid)
+				go->behaviour->write(packet);
+		}
+
 		break;
 	case ReplicationAction::Update:
 		packet << go->position.x;
@@ -164,6 +171,11 @@ void readGO(GameObject* go, const InputMemoryStream& packet, ReplicationAction a
 	switch (action) {
 	case ReplicationAction::Create:
 		ProcessCreatePacket(go, packet);
+		//Read Asteroid properties on Creation
+		if (go->behaviour) {
+			if (go->collider->type == ColliderType::Asteroid)
+				go->behaviour->read(packet);
+		}
 		break;
 	case ReplicationAction::Update:
 		//Store last values for Interpolation
@@ -227,7 +239,7 @@ void ProcessCreatePacket(GameObject * gameObject, const InputMemoryStream & pack
 	packet >> texture_filename;
 
 	gameObject->sprite = App->modRender->addSprite(gameObject);
-	gameObject->sprite->order = 5;
+
 	if (!std::strcmp(texture_filename.c_str(), App->modResources->spacecraft1->filename)) {
 		gameObject->sprite->texture = App->modResources->spacecraft1;
 	}
