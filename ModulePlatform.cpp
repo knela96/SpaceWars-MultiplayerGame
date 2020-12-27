@@ -338,37 +338,25 @@ bool ModulePlatform::preUpdate()
 
 				if (WasDown != IsDown)
 				{
-					if (VKCode == 'Q')
-					{
-						Win32ProcessKeyboardButton(&KeyboardInput.leftShoulder, IsDown);
-					}
-					else if (VKCode == 'E')
-					{
-						Win32ProcessKeyboardButton(&KeyboardInput.rightShoulder, IsDown);
-					}
-					else if (VKCode == VK_UP)
+					if (VKCode == 'W')
 					{
 						Win32ProcessKeyboardButton(&KeyboardInput.actionUp, IsDown);
 					}
-					else if (VKCode == VK_LEFT)
+					else if (VKCode == 'A')
 					{
 						Win32ProcessKeyboardButton(&KeyboardInput.actionLeft, IsDown);
 					}
-					else if (VKCode == VK_DOWN)
+					else if (VKCode == 'S')
 					{
 						Win32ProcessKeyboardButton(&KeyboardInput.actionDown, IsDown);
 					}
-					else if (VKCode == VK_RIGHT)
+					else if (VKCode == 'D')
 					{
 						Win32ProcessKeyboardButton(&KeyboardInput.actionRight, IsDown);
 					}
-					else if (VKCode == VK_ESCAPE)
+					else if (VKCode == VK_SPACE)
 					{
-						Win32ProcessKeyboardButton(&KeyboardInput.back, IsDown);
-					}
-					else if (VKCode == VK_RETURN)
-					{
-						Win32ProcessKeyboardButton(&KeyboardInput.start, IsDown);
+						Win32ProcessKeyboardButton(&KeyboardInput.actionShoot, IsDown);
 					}
 					else if (VKCode == VK_F1 && IsDown)
 					{
@@ -430,14 +418,7 @@ bool ModulePlatform::preUpdate()
 		{
 			XINPUT_GAMEPAD *pad = &controllerState.Gamepad;
 
-			Win32ProcessGamepadButton(&GamepadInput.actionUp, pad, XINPUT_GAMEPAD_Y);
-			Win32ProcessGamepadButton(&GamepadInput.actionDown, pad, XINPUT_GAMEPAD_A);
-			Win32ProcessGamepadButton(&GamepadInput.actionLeft, pad, XINPUT_GAMEPAD_X);
-			Win32ProcessGamepadButton(&GamepadInput.actionRight, pad, XINPUT_GAMEPAD_B);
-			Win32ProcessGamepadButton(&GamepadInput.leftShoulder, pad, XINPUT_GAMEPAD_LEFT_SHOULDER);
-			Win32ProcessGamepadButton(&GamepadInput.rightShoulder, pad, XINPUT_GAMEPAD_RIGHT_SHOULDER);
-			Win32ProcessGamepadButton(&GamepadInput.back, pad, XINPUT_GAMEPAD_BACK);
-			Win32ProcessGamepadButton(&GamepadInput.start, pad, XINPUT_GAMEPAD_START);
+			Win32ProcessGamepadButton(&GamepadInput.actionShoot, pad, XINPUT_GAMEPAD_A);
 
 			GamepadInput.horizontalAxis = Win32ProcessGamepadThumb(pad->sThumbLX, XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE);
 			GamepadInput.verticalAxis = Win32ProcessGamepadThumb(pad->sThumbLY, XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE);

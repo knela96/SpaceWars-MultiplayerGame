@@ -67,7 +67,7 @@ void Spaceship::onInput(const InputController &input)
 		}
 	}
 
-	if (input.actionDown == ButtonState::Pressed)
+	if (input.actionUp == ButtonState::Pressed)
 	{
 		const float advanceSpeed = 200.0f;
 		gameObject->position += vec2FromDegrees(gameObject->angle) * advanceSpeed * Time.deltaTime;
@@ -78,7 +78,7 @@ void Spaceship::onInput(const InputController &input)
 		}
 	}
 
-	if (input.actionLeft == ButtonState::Press)
+	if (input.actionShoot == ButtonState::Press)
 	{
 		if (isServer)
 		{
@@ -145,6 +145,7 @@ void Spaceship::onCollisionTriggered(Collider &c1, Collider &c2)
 				position = gameObject->position;
 
 				NetworkDestroy(gameObject);
+				NetworkScoreUpdate(&c2.gameObject->tag);
 			}
 
 			GameObject *explosion = NetworkInstantiate();

@@ -6,6 +6,46 @@
 
 class ModuleNetworkingServer : public ModuleNetworking
 {
+
+	//////////////////////////////////////////////////////////////////////
+	// Client proxies
+	//////////////////////////////////////////////////////////////////////
+
+	uint32 nextClientId = 0;
+
+	struct ClientProxy
+	{
+		bool connected = false;
+		sockaddr_in address;
+		uint32 clientId;
+		std::string name;
+		uint32 score;
+		GameObject *gameObject = nullptr;
+
+		// TODO(you): UDP virtual connection lab session
+		// TODO(you): Reliability on top of UDP lab session
+
+		float secondsSinceLastReceivedPacket = 0.0f;
+		float secondsSinceLastSendPacket = 0.0f;
+		float secondsSinceLastReplication = 0.0f;
+		float secondsSinceLastScore = 0.0f;
+
+		uint32 lastInputSequenceNumberReceived = 0;
+		uint32 nextExpectedInputSequenceNumber = 0;
+		InputController gamepad;
+
+		ReplicationManagerServer replicationManagerServer;
+	};
+
+	ClientProxy clientProxies[MAX_CLIENTS];
+
+	ClientProxy * createClientProxy();
+
+	ClientProxy * getClientProxy(const sockaddr_in &clientAddress);
+
+    void destroyClientProxy(ClientProxy *clientProxy);
+
+
 public:
 
 	//////////////////////////////////////////////////////////////////////
@@ -28,51 +68,13 @@ private:
 
 	void onGui() override;
 
-	void onPacketReceived(const InputMemoryStream &packet, const sockaddr_in &fromAddress) override;
+	void onPacketReceived(const InputMemoryStream& packet, const sockaddr_in& fromAddress) override;
 
 	void onUpdate() override;
 
-	void onConnectionReset(const sockaddr_in &fromAddress) override;
+	void onConnectionReset(const sockaddr_in& fromAddress) override;
 
 	void onDisconnect() override;
-
-
-
-	//////////////////////////////////////////////////////////////////////
-	// Client proxies
-	//////////////////////////////////////////////////////////////////////
-
-	uint32 nextClientId = 0;
-
-	struct ClientProxy
-	{
-		bool connected = false;
-		sockaddr_in address;
-		uint32 clientId;
-		std::string name;
-		GameObject *gameObject = nullptr;
-
-		// TODO(you): UDP virtual connection lab session
-		// TODO(you): Reliability on top of UDP lab session
-
-		float secondsSinceLastReceivedPacket = 0.0f;
-		float secondsSinceLastSendPacket = 0.0f;
-		float secondsSinceLastReplication = 0.0f;
-
-		uint32 lastInputSequenceNumberReceived = 0;
-		uint32 nextExpectedInputSequenceNumber = 0;
-		InputController gamepad;
-
-		ReplicationManagerServer replicationManagerServer;
-	};
-
-	ClientProxy clientProxies[MAX_CLIENTS];
-
-	ClientProxy * createClientProxy();
-
-	ClientProxy * getClientProxy(const sockaddr_in &clientAddress);
-
-    void destroyClientProxy(ClientProxy *clientProxy);
 
 
 public:
@@ -96,6 +98,9 @@ private:
 
 	void updateNetworkObject(GameObject *gameObject);
 	friend void (NetworkUpdate)(GameObject *);
+
+	void updateScoreObject(uint32* tag);
+	friend void (NetworkScoreUpdate)(uint32*);
 
 	void destroyNetworkObject(GameObject *gameObject);
 	void destroyNetworkObject(GameObject *gameObject, float delaySeconds);
@@ -143,9 +148,4 @@ void NetworkUpdate(GameObject *gameObject);
 // machines.
 void NetworkDestroy(GameObject *gameObject);
 void NetworkDestroy(GameObject *gameObject, float delaySeconds);
-
-//class ServerDeliveryDelegate : public DeliveryDelegate {
-//
-//	void onDeliverySucces(DeliveryManager* deliveryManager);
-//	void onDeliveryFailure(DeliveryManager* deliveryManager);
-//};
+void NetworkScoreUpdate(uint32* gameObject);

@@ -54,6 +54,11 @@ private:
 		Connected
 	};
 
+	struct ScoreClient {
+		std::string name;
+		uint32 score;
+	};
+
 	ClientState state = ClientState::Stopped;
 
 	std::string serverAddressStr;
@@ -65,7 +70,9 @@ private:
 
 	uint32 playerId = 0;
 	uint32 networkId = 0;
+	uint32 score = 0;
 
+	bool spawned = false;
 
 	// Connecting stage
 
@@ -83,7 +90,7 @@ private:
 	float inputDeliveryIntervalSeconds = 0.05f;
 	float secondsSinceLastInputDelivery = 0.0f;
 
-
+	ScoreClient scoreClients[MAX_CLIENTS];
 
 	//////////////////////////////////////////////////////////////////////
 	// Virtual connection
@@ -116,6 +123,7 @@ private:
 	// TODO(you): Latency management lab session
 	float secondsSinceLastReceivedPacket = 0.0f;
 	float secondsSinceLastSendPacket = 0.0f;
+	float secondsSinceLastScorePacket = 0.0f;
 
 };
 

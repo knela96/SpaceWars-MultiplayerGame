@@ -4,6 +4,7 @@ struct Collider
 {
 	ColliderType type = ColliderType::None;
 	GameObject *gameObject = nullptr;
+	GameObject *parentgameObject = nullptr;
 	bool isTrigger = false;
 };
 
@@ -22,7 +23,7 @@ public:
 	// ModuleCollision public methods
 	///////////////////////////////////////////////////////////////////////
 
-	Collider *addCollider(ColliderType type, GameObject *parent);
+	Collider* addCollider(ColliderType type, GameObject* parent);
 
 	void removeCollider(Collider * collider);
 

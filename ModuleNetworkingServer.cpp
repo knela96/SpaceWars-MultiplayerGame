@@ -73,7 +73,7 @@ void ModuleNetworkingServer::onGui()
 					{
 						ImGui::Text(" - gameObject net id: (null)");
 					}
-					
+
 					ImGui::Separator();
 				}
 			}
@@ -100,13 +100,28 @@ void ModuleNetworkingServer::onPacketReceived(const InputMemoryStream &packet, c
 		{
 			if (proxy == nullptr)
 			{
+				//Check player Name
+				std::string playerName;
+				packet >> playerName;
+				for (ClientProxy& clientProxy : clientProxies){
+					if (clientProxy.name == playerName) {
+						OutputMemoryStream unwelcomePacket;
+						unwelcomePacket << PROTOCOL_ID;
+						unwelcomePacket << ServerMessage::Unwelcome;
+						unwelcomePacket << 1;
+						sendPacket(unwelcomePacket, fromAddress);
+
+						WLOG("Message received: Name already taken");
+						return;
+					}
+				}
+
+
 				proxy = createClientProxy();
 
 				if (proxy != nullptr)
 				{
-					std::string playerName;
 					uint8 spaceshipType;
-					packet >> playerName;
 					packet >> spaceshipType;
 
 					proxy->address.sin_family = fromAddress.sin_family;
@@ -115,12 +130,14 @@ void ModuleNetworkingServer::onPacketReceived(const InputMemoryStream &packet, c
 					proxy->connected = true;
 					proxy->name = playerName;
 					proxy->clientId = nextClientId++;
+					proxy->score = 0;
+
 
 					// Create new network object
 					vec2 initialPosition = 500.0f * vec2{ Random.next() - 0.5f, Random.next() - 0.5f};
 					float initialAngle = 360.0f * Random.next();
 					proxy->gameObject = spawnPlayer(spaceshipType, initialPosition, initialAngle);
-				
+
 					// Send welcome to the new player
 					OutputMemoryStream welcomePacket;
 					welcomePacket << PROTOCOL_ID;
@@ -170,7 +187,7 @@ void ModuleNetworkingServer::onPacketReceived(const InputMemoryStream &packet, c
 					packet >> inputData.verticalAxis;
 					packet >> inputData.buttonBits;
 					lastInputData = inputData.sequenceNumber;
-					
+
 
 					if (inputData.sequenceNumber >= proxy->nextExpectedInputSequenceNumber)
 					{
@@ -189,8 +206,6 @@ void ModuleNetworkingServer::onPacketReceived(const InputMemoryStream &packet, c
 			if (proxy != nullptr)
 				proxy->secondsSinceLastReceivedPacket = 0.0f;
 		}
-
-		// TODO(you): UDP virtual connection lab session
 	}
 }
 
@@ -211,6 +226,11 @@ void ModuleNetworkingServer::onUpdate()
 				}
 			}
 		}
+
+		bool computedScore = false;
+		OutputMemoryStream scorepacket;
+		scorepacket << PROTOCOL_ID;
+		scorepacket << ServerMessage::Score;
 
 		for (ClientProxy &clientProxy : clientProxies)
 		{
@@ -258,11 +278,31 @@ void ModuleNetworkingServer::onUpdate()
 						clientProxy.replicationManagerServer.write(packet);
 
 					sendPacket(packet, clientProxy.address);
+
 					clientProxy.secondsSinceLastReplication = 0.0f;
 
 					//TODO(you): Reliability on top of UDP lab session
 
 				}
+
+				// TODO(you): World state replication lab session
+				clientProxy.secondsSinceLastScore += Time.deltaTime;
+
+				if (clientProxy.secondsSinceLastScore >= REPLICATION_INTERVAL_SECONDS)
+				{
+					if (computedScore == false) {
+						for (ClientProxy& clientproxy : clientProxies)
+						{
+							scorepacket << clientproxy.name;
+							scorepacket << clientproxy.score;
+						}
+						computedScore = true;
+					}
+					sendPacket(scorepacket, clientProxy.address);
+					clientProxy.secondsSinceLastScore = 0.0f;
+				}
+
+
 			}
 		}
 	}
@@ -294,7 +334,7 @@ void ModuleNetworkingServer::onDisconnect()
 	{
 		destroyClientProxy(&clientProxy);
 	}
-	
+
 	nextClientId = 0;
 
 	state = ServerState::Stopped;
@@ -410,6 +450,19 @@ GameObject * ModuleNetworkingServer::instantiateNetworkObject()
 	return gameObject;
 }
 
+void ModuleNetworkingServer::updateScoreObject(uint32* tag) {
+	for (int i = 0; i < MAX_CLIENTS; ++i)
+	{
+		if(clientProxies[i].gameObject != nullptr) {
+			if (clientProxies[i].gameObject->tag == *tag)
+			{
+				clientProxies[i].score += 1;
+				break;
+			}
+		}
+	}
+}
+
 void ModuleNetworkingServer::updateNetworkObject(GameObject * gameObject)
 {
 	// Notify all client proxies' replication manager to destroy the object remotely
@@ -488,6 +541,11 @@ void NetworkUpdate(GameObject * gameObject)
 	App->modNetServer->updateNetworkObject(gameObject);
 }
 
+void NetworkScoreUpdate(uint32* gameObject)
+{
+	App->modNetServer->updateScoreObject(gameObject);
+}
+
 void NetworkDestroy(GameObject * gameObject)
 {
 	NetworkDestroy(gameObject, 0.0f);
@@ -500,12 +558,3 @@ void NetworkDestroy(GameObject * gameObject, float delaySeconds)
 
 	App->modNetServer->destroyNetworkObject(gameObject, delaySeconds);
 }
-
-//void ServerDeliveryDelegate::onDeliverySucces(DeliveryManager* deliveryManager) {
-//	//this should make something
-//}
-//
-//void ServerDeliveryDelegate::onDeliveryFailure(DeliveryManager* deliveryManager)
-//{
-//	//this should make something aswell
-//}

@@ -141,10 +141,7 @@ struct InputController
 			ButtonState actionDown;
 			ButtonState actionLeft;
 			ButtonState actionRight;
-			ButtonState leftShoulder;
-			ButtonState rightShoulder;
-			ButtonState back;
-			ButtonState start;
+			ButtonState actionShoot;
 		};
 	};
 };
