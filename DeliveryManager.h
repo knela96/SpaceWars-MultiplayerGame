@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 // TODO(you): Reliability on top of UDP lab session
 class DeliveryManager;
 
@@ -19,7 +21,7 @@ struct Delivery {
 class DeliveryManager {
 public:
 
-	// For senders to weite a new seq. numbers into a packet
+	// For senders to write a new seq. numbers into a packet
 	Delivery* writeSequenceNumber(OutputMemoryStream& packet);
 
 	//For receivers to process the seq. number from an incoming packet
@@ -46,4 +48,6 @@ private:
 	- The next expected sequence number
 	- A list of sequence numbers pending ack
 	*/
+	uint32 deliveryCount = 0;
+	std::vector<Delivery*> deliveries;
 };

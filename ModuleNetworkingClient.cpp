@@ -218,7 +218,8 @@ void ModuleNetworkingClient::onUpdate()
 				packet << inputPacketData.verticalAxis;
 				packet << inputPacketData.buttonBits;
 			}
-
+			Delivery* delivery = deliveryManager.writeSequenceNumber(packet);
+			
 			sendPacket(packet, serverAddress);
 		}
 

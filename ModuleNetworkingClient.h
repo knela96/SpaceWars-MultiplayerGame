@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ModuleNetworking.h"
+#include "DeliveryManager.h"
 
 class ModuleNetworkingClient : public ModuleNetworking
 {
@@ -105,7 +106,7 @@ private:
 	//////////////////////////////////////////////////////////////////////
 
 	// TODO(you): Reliability on top of UDP lab session
-
+	DeliveryManager deliveryManager;
 
 
 	//////////////////////////////////////////////////////////////////////

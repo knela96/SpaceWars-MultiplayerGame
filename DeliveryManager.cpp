@@ -1,3 +1,18 @@
 #include "Networks.h"
+#include "DeliveryManager.h"
 
-// TODO(you): Reliability on top of UDP lab session
+Delivery* DeliveryManager::writeSequenceNumber(OutputMemoryStream& packet)
+{
+	Delivery* delivery = new Delivery();
+
+
+	delivery->dispatchTime = Time.time;
+	delivery->sequenceNumber = ++deliveryCount;
+
+	packet << delivery->sequenceNumber;
+
+	deliveries.push_back(delivery);
+
+	return delivery;
+}
+
