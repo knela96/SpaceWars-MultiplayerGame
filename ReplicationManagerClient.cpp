@@ -13,19 +13,26 @@ void ReplicationManagerClient::read(const InputMemoryStream& packet)
 		if (action == ReplicationAction::Create) {
 			GameObject* go = Instantiate();
 			App->modLinkingContext->registerNetworkGameObjectWithNetworkId(go, networkID);
-
 			readGO(go, packet, ReplicationAction::Create);
 		}
 		else if (action == ReplicationAction::Update)
 		{
 			GameObject* go = App->modLinkingContext->getNetworkGameObject(networkID);
-			readGO(go, packet, ReplicationAction::Update);
+			if (go != nullptr) {
+				readGO(go, packet, ReplicationAction::Update);
+			}
+			else {
+				GameObject dummy;
+				readDummy(&dummy, packet, ReplicationAction::Update);
+			}
 		}
 		else if (action == ReplicationAction::Destroy)
 		{
 			GameObject* go = App->modLinkingContext->getNetworkGameObject(networkID);
-			App->modLinkingContext->unregisterNetworkGameObject(go);
-			Destroy(go);
+			if (go != nullptr) {
+				App->modLinkingContext->unregisterNetworkGameObject(go);
+				Destroy(go);
+			}
 		}
 	}
 }

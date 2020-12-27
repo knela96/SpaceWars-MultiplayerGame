@@ -10,11 +10,16 @@ public:
 	const char *playerName = "player";
 	uint8 spaceshipType = 0;
 
+	float timeSpawn = 0;
+	GameObject* asteroids [MAX_GAME_OBJECTS];
+
 private:
 
 	void enable() override;
 
 	void update() override;
+
+	void GameLogic();
 
 	void gui() override;
 

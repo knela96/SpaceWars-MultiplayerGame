@@ -86,7 +86,8 @@ enum class ColliderType
 {
 	None,
 	Player,
-	Laser
+	Laser,
+	Asteroid
 };
 
 
@@ -141,10 +142,7 @@ struct InputController
 			ButtonState actionDown;
 			ButtonState actionLeft;
 			ButtonState actionRight;
-			ButtonState leftShoulder;
-			ButtonState rightShoulder;
-			ButtonState back;
-			ButtonState start;
+			ButtonState actionShoot;
 		};
 	};
 };

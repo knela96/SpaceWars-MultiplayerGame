@@ -38,7 +38,6 @@ void Laser::update()
 
 
 
-
 void Spaceship::start()
 {
 	//CHECK
@@ -67,7 +66,7 @@ void Spaceship::onInput(const InputController &input)
 		}
 	}
 
-	if (input.actionDown == ButtonState::Pressed)
+	if (input.actionUp == ButtonState::Pressed)
 	{
 		const float advanceSpeed = 200.0f;
 		gameObject->position += vec2FromDegrees(gameObject->angle) * advanceSpeed * Time.deltaTime;
@@ -78,7 +77,7 @@ void Spaceship::onInput(const InputController &input)
 		}
 	}
 
-	if (input.actionLeft == ButtonState::Press)
+	if (input.actionShoot == ButtonState::Press)
 	{
 		if (isServer)
 		{
@@ -123,7 +122,7 @@ void Spaceship::destroy()
 
 void Spaceship::onCollisionTriggered(Collider &c1, Collider &c2)
 {
-	if (c2.type == ColliderType::Laser && c2.gameObject->tag != gameObject->tag)
+	if ((c2.type == ColliderType::Laser || c2.type == ColliderType::Asteroid) && c2.gameObject->tag != gameObject->tag)
 	{
 		if (isServer)
 		{
@@ -176,4 +175,102 @@ void Spaceship::write(OutputMemoryStream & packet)
 void Spaceship::read(const InputMemoryStream & packet)
 {
 	packet >> hitPoints;
+}
+
+//------------------------------------------------------------
+void Asteroid::start()
+{
+	switch (asteroidType) {
+	case 0:
+		if(isServer)
+			pixelsPerSecond = 30 + 20 * Random.next();
+		hitPoints = 3;
+		break;
+	case 1:
+		if (isServer)
+			pixelsPerSecond = 50 + 20 * Random.next();
+		hitPoints = 2;
+		break;
+	case 2:
+		if (isServer)
+			pixelsPerSecond = 100 + 20 * Random.next();
+		hitPoints = 1;
+		break;
+	}
+
+	//Initialize Current Position
+	gameObject->last_position = gameObject->new_position = gameObject->position;
+	gameObject->last_angle = gameObject->new_angle = gameObject->angle;
+}
+
+void Asteroid::update()
+{
+	gameObject->position += vec2FromDegrees(gameObject->angle) * pixelsPerSecond * Time.deltaTime;
+
+	if (isServer) {
+		if (gameObject->position.x > 300 || gameObject->position.x < -300 || gameObject->position.y > 300 || gameObject->position.y < -300) {
+			NetworkDestroy(gameObject);
+		}
+	}
+}
+
+void Asteroid::onCollisionTriggered(Collider& c1, Collider& c2)
+{
+	if (c2.type == ColliderType::Laser && c2.gameObject->tag != gameObject->tag)
+	{
+		if (isServer)
+		{
+			NetworkDestroy(c2.gameObject); // Destroy the asteroid
+
+			if (hitPoints > 0)
+			{
+				hitPoints--;
+				NetworkUpdate(gameObject);
+			}
+
+			float size = 30 + 50.0f * Random.next();
+			vec2 position = gameObject->position + 50.0f * vec2{ Random.next() - 0.5f, Random.next() - 0.5f };
+
+			if (hitPoints <= 0)
+			{
+				// Centered big explosion
+				position = gameObject->position;
+
+				for (int i = 0; i < 2 && asteroidType < MAX_HIT_POINTS; ++i) {
+					float initialAngle = 360.0f * Random.next();
+					App->modNetServer->spawnAsteroid(asteroidType + 1, gameObject->position, initialAngle);
+				}
+
+				NetworkDestroy(gameObject);
+			}
+
+			GameObject* explosion = NetworkInstantiate();
+			explosion->position = position;
+			explosion->size = vec2{ size, size };
+			explosion->angle = 365.0f * Random.next();
+
+			explosion->sprite = App->modRender->addSprite(explosion);
+			explosion->sprite->texture = App->modResources->explosion1;
+			explosion->sprite->order = 100;
+
+			explosion->animation = App->modRender->addAnimation(explosion);
+			explosion->animation->clip = App->modResources->explosionClip;
+
+			NetworkDestroy(explosion, 2.0f);
+		}
+	}
+}
+
+void Asteroid::write(OutputMemoryStream& packet)
+{
+	packet << asteroidType;
+	packet << hitPoints;
+	packet << pixelsPerSecond;
+}
+
+void Asteroid::read(const InputMemoryStream& packet)
+{
+	packet >> asteroidType;
+	packet >> hitPoints;
+	packet >> pixelsPerSecond;
 }
