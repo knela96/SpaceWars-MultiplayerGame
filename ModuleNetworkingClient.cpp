@@ -105,9 +105,11 @@ void ModuleNetworkingClient::onGui()
 	}
 	if (ImGui::Begin("Score")) {
 		ImGui::Text("[Players]");
-		for (int i = 0; i < MAX_CLIENTS && scoreClients[i].name != ""; ++i) {
-			std::string s = scoreClients[i].name + ":	" + std::to_string(scoreClients[i].score);
-			ImGui::Text("%s", s.c_str());
+		for (int i = 0; i < MAX_CLIENTS; ++i) {
+			if (scoreClients[i].name != "") {
+				std::string s = scoreClients[i].name + ": " + std::to_string(scoreClients[i].score);
+				ImGui::Text("%s", s.c_str());
+			}
 		}
 
 		ImGui::End();
