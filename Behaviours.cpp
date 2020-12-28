@@ -57,21 +57,52 @@ void Spaceship::start()
 
 void Spaceship::onInput(const InputController &input)
 {
-	if (input.horizontalAxis != 0.0f)
+	
+
+	if (input.actionUp == ButtonState::Pressed)
 	{
-		const float rotateSpeed = 180.0f;
-		gameObject->angle += input.horizontalAxis * rotateSpeed * Time.deltaTime;
+		if (input.horizontalAxis != 0.0f)
+		{
+			const float rotateSpeed = 180.0f;
+			gameObject->angle += input.horizontalAxis * rotateSpeed * Time.deltaTime;
+
+			if (isServer)
+			{
+				NetworkUpdate(gameObject);
+			}
+		}
+
+		const float advanceSpeed = 200.0f;
+		gameObject->position += vec2FromDegrees(gameObject->angle) * advanceSpeed * Time.deltaTime;
 
 		if (isServer)
 		{
 			NetworkUpdate(gameObject);
 		}
-	}
-
-	if (input.actionUp == ButtonState::Pressed)
+	}else if (input.actionDown == ButtonState::Pressed)
 	{
-		const float advanceSpeed = 200.0f;
+		if (input.horizontalAxis != 0.0f)
+		{
+			const float rotateSpeed = 180.0f;
+			gameObject->angle += input.horizontalAxis * rotateSpeed * Time.deltaTime;
+
+			if (isServer)
+			{
+				NetworkUpdate(gameObject);
+			}
+		}
+
+		const float advanceSpeed = -200.0f;
 		gameObject->position += vec2FromDegrees(gameObject->angle) * advanceSpeed * Time.deltaTime;
+
+		if (isServer)
+		{
+			NetworkUpdate(gameObject);
+		}
+	}else if (input.horizontalAxis != 0.0f)
+	{
+		const float rotateSpeed = 180.0f;
+		gameObject->angle += input.horizontalAxis * rotateSpeed * Time.deltaTime;
 
 		if (isServer)
 		{
