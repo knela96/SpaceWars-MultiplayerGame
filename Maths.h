@@ -11,8 +11,6 @@
 #endif
 #define PI 3.14159265359f
 
-
-
 ////////////////////////////////////////////////////////////////////////
 // FUNCTIONS
 ////////////////////////////////////////////////////////////////////////
@@ -80,6 +78,19 @@ inline vec2 vec2FromDegrees(float degrees) {
 	return result;
 }
 
+#define SIN(x) sin(x * 3.141592653589 / 180)
+#define COS(x) cos(x * 3.141592653589 / 180)
+
+
+vec2 rotate(vec2 point, int x_pivot, int y_pivot, float angle)
+{
+	float x_shifted = point.x - x_pivot;
+	float y_shifted = point.y - y_pivot;
+
+	point.x = x_pivot + (x_shifted * COS(angle) - y_shifted * SIN(angle));
+	point.y = y_pivot + (x_shifted * SIN(angle) + y_shifted * COS(angle));
+	return point;
+}
 
 
 ////////////////////////////////////////////////////////////////////////

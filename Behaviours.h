@@ -51,6 +51,11 @@ struct Spaceship : public Behaviour
 {
 	static const uint8 MAX_HIT_POINTS = 5;
 	uint8 hitPoints = MAX_HIT_POINTS;
+	uint8 level = 0;
+	uint8 cur_level = level;
+	float timeSincelastHit = 0;
+	float curDelayShoot;
+	float delayShoot;
 
 	GameObject *lifebar = nullptr;
 
@@ -59,6 +64,8 @@ struct Spaceship : public Behaviour
 	void start() override;
 
 	void onInput(const InputController &input) override;
+
+	void SpawnLaser(vec2 position);
 
 	void update() override;
 

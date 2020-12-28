@@ -111,7 +111,6 @@ void ModuleNetworkingClient::onGui()
 				ImGui::Text("%s", s.c_str());
 			}
 		}
-
 		ImGui::End();
 	}
 }

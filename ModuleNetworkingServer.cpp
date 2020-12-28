@@ -277,7 +277,7 @@ void ModuleNetworkingServer::onUpdate()
 					clientProxy.secondsSinceLastReplication = 0.0f;
 				}
 
-				// TODO(you): World state replication lab session
+				// Send Score Data to all clients
 				clientProxy.secondsSinceLastScore += Time.deltaTime;
 
 				if (clientProxy.secondsSinceLastScore >= REPLICATION_INTERVAL_SECONDS)
@@ -449,6 +449,14 @@ void ModuleNetworkingServer::updateScoreObject(uint32* tag) {
 			if (clientProxies[i].gameObject->tag == *tag)
 			{
 				clientProxies[i].score += 1;
+				if (clientProxies[i].score == 3) {
+					((Spaceship*)clientProxies[i].gameObject->behaviour)->level = 1;
+					clientProxies[i].replicationManagerServer.update(clientProxies[i].gameObject->networkId);
+				}
+				else if (clientProxies[i].score == 5) {
+					((Spaceship*)clientProxies[i].gameObject->behaviour)->level = 2;
+					clientProxies[i].replicationManagerServer.update(clientProxies[i].gameObject->networkId);
+				}
 				break;
 			}
 		}

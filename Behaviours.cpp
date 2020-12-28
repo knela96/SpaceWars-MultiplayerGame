@@ -1,8 +1,6 @@
 #include "Networks.h"
 #include "Behaviours.h"
 
-
-
 void Laser::start()
 {
 	gameObject->networkInterpolationEnabled = false;
@@ -52,6 +50,9 @@ void Spaceship::start()
 	lifebar->sprite = App->modRender->addSprite(lifebar);
 	lifebar->sprite->pivot = vec2{ 0.0f, 0.5f };
 	lifebar->sprite->order = 5;
+
+	cur_level = level;
+	delayShoot = 0.25;
 }
 
 void Spaceship::onInput(const InputController &input)
@@ -78,28 +79,47 @@ void Spaceship::onInput(const InputController &input)
 		}
 	}
 
-	if (input.actionShoot == ButtonState::Press)
+	curDelayShoot += Time.deltaTime;
+	if (input.actionShoot == ButtonState::Press && curDelayShoot > delayShoot)
 	{
 		if (isServer)
 		{
-			GameObject *laser = NetworkInstantiate();
-
-			laser->position = gameObject->position;
-			laser->angle = gameObject->angle;
-			laser->size = { 20, 60 };
-
-			laser->sprite = App->modRender->addSprite(laser);
-			laser->sprite->order = 3;
-			laser->sprite->texture = App->modResources->laser;
-			laser->collider = App->modCollision->addCollider(ColliderType::Laser,laser); 
-			laser->collider->isTrigger = true;
-
-			Laser *laserBehaviour = App->modBehaviour->addLaser(laser);
-			laserBehaviour->isServer = isServer;
-
-			laser->tag = gameObject->tag;
+			curDelayShoot = 0;
+			switch (level) {
+			case (0):
+				SpawnLaser(gameObject->position);
+				break;
+			case(1):
+				SpawnLaser(rotate(gameObject->position + vec2{ 17,0 }, gameObject->position.x, gameObject->position.y, gameObject->angle));
+				SpawnLaser(rotate(gameObject->position + vec2{ -17,0 }, gameObject->position.x, gameObject->position.y, gameObject->angle));
+				break;
+			case(2):
+				SpawnLaser(rotate(gameObject->position + vec2{ 35,0 }, gameObject->position.x, gameObject->position.y, gameObject->angle));
+				SpawnLaser(gameObject->position);
+				SpawnLaser(rotate(gameObject->position + vec2{ -35,0 }, gameObject->position.x, gameObject->position.y, gameObject->angle));
+				break;
+			}
 		}
 	}
+}
+
+void Spaceship::SpawnLaser(vec2 position) {
+	GameObject* laser = NetworkInstantiate();
+
+	laser->position = position;
+	laser->angle = gameObject->angle;
+	laser->size = { 20, 60 };
+
+	laser->sprite = App->modRender->addSprite(laser);
+	laser->sprite->order = 3;
+	laser->sprite->texture = App->modResources->laser;
+	laser->collider = App->modCollision->addCollider(ColliderType::Laser, laser);
+	laser->collider->isTrigger = true;
+
+	Laser* laserBehaviour = App->modBehaviour->addLaser(laser);
+	laserBehaviour->isServer = isServer;
+
+	laser->tag = gameObject->tag;
 }
 
 void Spaceship::update()
@@ -110,6 +130,41 @@ void Spaceship::update()
 	lifebar->position = gameObject->position + vec2{ -50.0f, -50.0f };
 	lifebar->size = vec2{ lifeRatio * 80.0f, 5.0f };
 	lifebar->sprite->color = lerp(colorDead, colorAlive, lifeRatio);
+
+	if (cur_level != level) {
+		switch (level) {
+		case (0):
+			gameObject->sprite->texture = App->modResources->spacecraft1;
+			App->modCollision->removeCollider(gameObject->collider);
+			gameObject->collider = App->modCollision->addCollider(ColliderType::Player, gameObject);
+			gameObject->collider->isTrigger = true;
+			delayShoot = 0.25;
+			break;
+		case(1):
+			gameObject->sprite->texture = App->modResources->spacecraft2; 
+			App->modCollision->removeCollider(gameObject->collider);
+			gameObject->collider = App->modCollision->addCollider(ColliderType::Player, gameObject);
+			gameObject->collider->isTrigger = true;
+			delayShoot = 0.5;
+			break;
+		case(2):
+			gameObject->sprite->texture = App->modResources->spacecraft3;
+			App->modCollision->removeCollider(gameObject->collider);
+			gameObject->collider = App->modCollision->addCollider(ColliderType::Player, gameObject);
+			gameObject->collider->isTrigger = true;
+			delayShoot = 1;
+			break;
+		}
+	}
+
+	if (isServer) {
+		timeSincelastHit += Time.deltaTime;
+		if (timeSincelastHit > 5 && hitPoints < MAX_HIT_POINTS) {
+			hitPoints++;
+			NetworkUpdate(gameObject);
+			timeSincelastHit = 0;
+		}
+	}
 
 	// Interpolation
 	if (App->modNetClient->GetNetworkID() != gameObject->networkId && !isServer && gameObject->networkInterpolationEnabled)
@@ -132,6 +187,7 @@ void Spaceship::onCollisionTriggered(Collider &c1, Collider &c2)
 			if (hitPoints > 0)
 			{
 				hitPoints--;
+				timeSincelastHit = 0;
 				NetworkUpdate(gameObject);
 			}
 
@@ -172,9 +228,11 @@ void Spaceship::onCollisionTriggered(Collider &c1, Collider &c2)
 void Spaceship::write(OutputMemoryStream & packet)
 {
 	packet << hitPoints;
+	packet << level;
 }
 
 void Spaceship::read(const InputMemoryStream & packet)
 {
 	packet >> hitPoints;
+	packet >> level;
 }
