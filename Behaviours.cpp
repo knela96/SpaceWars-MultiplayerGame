@@ -65,11 +65,6 @@ void Spaceship::onInput(const InputController &input)
 		{
 			const float rotateSpeed = 180.0f;
 			gameObject->angle += input.horizontalAxis * rotateSpeed * Time.deltaTime;
-
-			if (isServer)
-			{
-				NetworkUpdate(gameObject);
-			}
 		}
 
 		const float advanceSpeed = 200.0f;
@@ -83,13 +78,8 @@ void Spaceship::onInput(const InputController &input)
 	{
 		if (input.horizontalAxis != 0.0f)
 		{
-			const float rotateSpeed = 180.0f;
+			const float rotateSpeed = -180.0f;
 			gameObject->angle += input.horizontalAxis * rotateSpeed * Time.deltaTime;
-
-			if (isServer)
-			{
-				NetworkUpdate(gameObject);
-			}
 		}
 
 		const float advanceSpeed = -200.0f;
@@ -99,7 +89,8 @@ void Spaceship::onInput(const InputController &input)
 		{
 			NetworkUpdate(gameObject);
 		}
-	}else if (input.horizontalAxis != 0.0f)
+	}
+	else if (input.horizontalAxis != 0.0f)
 	{
 		const float rotateSpeed = 180.0f;
 		gameObject->angle += input.horizontalAxis * rotateSpeed * Time.deltaTime;
