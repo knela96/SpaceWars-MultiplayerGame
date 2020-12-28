@@ -159,7 +159,7 @@ void Spaceship::update()
 
 	if (isServer) {
 		timeSincelastHit += Time.deltaTime;
-		if (timeSincelastHit > 5 && hitPoints < MAX_HIT_POINTS) {
+		if (timeSincelastHit > 4 && hitPoints < MAX_HIT_POINTS) {
 			hitPoints++;
 			NetworkUpdate(gameObject);
 			timeSincelastHit = 0;
