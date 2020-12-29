@@ -18,13 +18,12 @@ SpaceWars is a 8 Players 2D Multiplayer Battleroyale game where the players will
 
 # Implementations
 ### Èric:
-	- Client Server Events
+	- Client/Server Events
 	- World State Replication
 	- Client side prediction + Server Reconciliation
 	- Entity Interpolation
-	- Scores
-	- Spaceship Level Up
-	- Restore Life
+	- All Game Mechanics (Scores,Spaceship Level Up,Restore Life)
 
 ### Joan:
-	
+	- Packets Redundancy
+	- Delivery Manager
