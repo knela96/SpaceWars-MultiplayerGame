@@ -18,10 +18,17 @@ SpaceWars is a 8 Players 2D Multiplayer Battleroyale game where the players will
 
 # Implementations
 ### Èric:
-	- Client/Server Events
-	- World State Replication
-	- Client side prediction + Server Reconciliation
-	- Entity Interpolation
+	- Client/Server Events (Completely Achieved)
+		Allows client and Server send Events that will allow to perform different actions on the application. (NO bugs found)
+	- World State Replication (Completely Achieved)
+		Replicates all the gameobjects and actions in the Server into each each client, to visualize 
+		exactly the same. (NO bugs found)
+	- Client side prediction + Server Reconciliation (Completely Achieved)
+		Processes the inputs on the client before sending and receiveing the input packets from the server, to 
+		avoid laggy movement. (NO bugs found)
+	- Entity Interpolation (Completely Achieved)
+		Interpolates the last position received from the server and Interpolates it to the new one, smoothing 
+		the movement of all the players. (NO bugs found)
 	- All Game Mechanics (Scores,Spaceship Level Up,Restore Life)
 
 ### Joan:
