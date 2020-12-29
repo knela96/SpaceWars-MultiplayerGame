@@ -306,18 +306,20 @@ void ModuleNetworkingClient::onDisconnect()
 void ModuleNetworkingClient::InputReconciliation(const uint32& currentRequest, const InputMemoryStream& packet) {
 	GameObject* go = App->modLinkingContext->getNetworkGameObject(networkId);
 
-	if (go && currentRequest > inputDataFront)
-	{
-		InputController ServerInputs;
-		for (uint32 i = inputDataFront; i < currentRequest; ++i)
+	if (go != nullptr) {
+		if (currentRequest > inputDataFront)
 		{
-			InputPacketData& inputPacketData = inputData[i % ArrayCount(inputData)];
-			inputControllerFromInputPacketData(inputPacketData, ServerInputs);
+			InputController ServerInputs;
+			for (uint32 i = inputDataFront; i < currentRequest; ++i)
+			{
+				InputPacketData& inputPacketData = inputData[i % ArrayCount(inputData)];
+				inputControllerFromInputPacketData(inputPacketData, ServerInputs);
 
-			if (go->behaviour)
-				go->behaviour->onInput(ServerInputs);
+				if (go->behaviour)
+					go->behaviour->onInput(ServerInputs);
+			}
+
+			inputDataFront = currentRequest;
 		}
-
-		inputDataFront = currentRequest;
 	}
 }
