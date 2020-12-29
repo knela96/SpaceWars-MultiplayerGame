@@ -129,8 +129,6 @@ private:
 
 	uint16 listenPort = 0;
 	uint32 lastInputData = 0;
-
-	// TODO(you): UDP virtual connection lab session
 };
 
 

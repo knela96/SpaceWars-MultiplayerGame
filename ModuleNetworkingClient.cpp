@@ -159,7 +159,6 @@ void ModuleNetworkingClient::onPacketReceived(const InputMemoryStream &packet, c
 			ReplicationManagerClient manager;
 			uint32 currentRequest = 0;
 			packet >> currentRequest;
-			packet >> inputDataFront;
 
 			manager.read(packet);
 			InputReconciliation(currentRequest, packet);
@@ -251,7 +250,7 @@ void ModuleNetworkingClient::onUpdate()
 				packet << inputPacketData.verticalAxis;
 				packet << inputPacketData.buttonBits;
 			}
-			Delivery* delivery = deliveryManager.writeSequenceNumber(packet);
+			//Delivery* delivery = deliveryManager.writeSequenceNumber(packet);
 			
 			sendPacket(packet, serverAddress);
 		}

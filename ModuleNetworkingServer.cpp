@@ -186,8 +186,6 @@ void ModuleNetworkingServer::onPacketReceived(const InputMemoryStream &packet, c
 					packet >> inputData.horizontalAxis;
 					packet >> inputData.verticalAxis;
 					packet >> inputData.buttonBits;
-					lastInputData = inputData.sequenceNumber;
-
 
 					if (inputData.sequenceNumber >= proxy->nextExpectedInputSequenceNumber)
 					{
@@ -272,7 +270,6 @@ void ModuleNetworkingServer::onUpdate()
 					packet << PROTOCOL_ID;
 					packet << ServerMessage::Replication;
 					packet << clientProxy.lastInputSequenceNumberReceived;
-					packet << lastInputData;
 
 					if (!clientProxy.replicationManagerServer.commands.empty())
 						clientProxy.replicationManagerServer.write(packet);
@@ -280,9 +277,6 @@ void ModuleNetworkingServer::onUpdate()
 					sendPacket(packet, clientProxy.address);
 
 					clientProxy.secondsSinceLastReplication = 0.0f;
-
-					//TODO(you): Reliability on top of UDP lab session
-
 				}
 
 				// Send Score Data to all clients
