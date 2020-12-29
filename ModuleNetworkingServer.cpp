@@ -73,7 +73,7 @@ void ModuleNetworkingServer::onGui()
 					{
 						ImGui::Text(" - gameObject net id: (null)");
 					}
-					
+
 					ImGui::Separator();
 				}
 			}
@@ -137,7 +137,7 @@ void ModuleNetworkingServer::onPacketReceived(const InputMemoryStream &packet, c
 					vec2 initialPosition = 500.0f * vec2{ Random.next() - 0.5f, Random.next() - 0.5f};
 					float initialAngle = 360.0f * Random.next();
 					proxy->gameObject = spawnPlayer(spaceshipType, initialPosition, initialAngle);
-				
+
 					// Send welcome to the new player
 					OutputMemoryStream welcomePacket;
 					welcomePacket << PROTOCOL_ID;
@@ -176,14 +176,18 @@ void ModuleNetworkingServer::onPacketReceived(const InputMemoryStream &packet, c
 			// Process the input packet and update the corresponding game object
 			if (proxy != nullptr && IsValid(proxy->gameObject))
 			{
+				// TODO(you): Reliability on top of UDP lab session
 				// Read input data
 				while (packet.RemainingByteCount() > 0)
 				{
 					InputPacketData inputData;
+					//packet >> ;
 					packet >> inputData.sequenceNumber;
 					packet >> inputData.horizontalAxis;
 					packet >> inputData.verticalAxis;
 					packet >> inputData.buttonBits;
+					lastInputData = inputData.sequenceNumber;
+
 
 					if (inputData.sequenceNumber >= proxy->nextExpectedInputSequenceNumber)
 					{
@@ -227,7 +231,7 @@ void ModuleNetworkingServer::onUpdate()
 		OutputMemoryStream scorepacket;
 		scorepacket << PROTOCOL_ID;
 		scorepacket << ServerMessage::Score;
-		
+
 		for (ClientProxy &clientProxy : clientProxies)
 		{
 			if (clientProxy.connected)
@@ -268,6 +272,7 @@ void ModuleNetworkingServer::onUpdate()
 					packet << PROTOCOL_ID;
 					packet << ServerMessage::Replication;
 					packet << clientProxy.lastInputSequenceNumberReceived;
+					packet << lastInputData;
 
 					if (!clientProxy.replicationManagerServer.commands.empty())
 						clientProxy.replicationManagerServer.write(packet);
@@ -275,6 +280,9 @@ void ModuleNetworkingServer::onUpdate()
 					sendPacket(packet, clientProxy.address);
 
 					clientProxy.secondsSinceLastReplication = 0.0f;
+
+					//TODO(you): Reliability on top of UDP lab session
+
 				}
 
 				// Send Score Data to all clients
@@ -326,7 +334,7 @@ void ModuleNetworkingServer::onDisconnect()
 	{
 		destroyClientProxy(&clientProxy);
 	}
-	
+
 	nextClientId = 0;
 
 	state = ServerState::Stopped;
@@ -558,4 +566,3 @@ void NetworkDestroy(GameObject * gameObject, float delaySeconds)
 
 	App->modNetServer->destroyNetworkObject(gameObject, delaySeconds);
 }
-

@@ -2,6 +2,7 @@
 
 #include "ModuleNetworking.h"
 #include "ReplicationManagerServer.h"
+#include "DeliveryManager.h"
 
 class ModuleNetworkingServer : public ModuleNetworking
 {
@@ -127,7 +128,7 @@ private:
 	ServerState state = ServerState::Stopped;
 
 	uint16 listenPort = 0;
-
+	uint32 lastInputData = 0;
 
 	// TODO(you): UDP virtual connection lab session
 };

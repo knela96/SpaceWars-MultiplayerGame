@@ -1,6 +1,6 @@
 #pragma once
 #include <map>
-
+#include "DeliveryManager.h"
 enum class ReplicationAction
 {
 	None,Create,Update,Destroy
@@ -22,4 +22,10 @@ public:
 	void write(OutputMemoryStream & packet);
 
 	std::map<uint32, ReplicationAction> commands;
+};
+
+class ReplicationDeliveryDelegate :public DeliveryDelegate {
+	void onDeliverySuccess(DeliveryManager* deliveryManager) override;
+	void onDeliveryFailure(DeliveryManager* deliveryManager)override;
+
 };
