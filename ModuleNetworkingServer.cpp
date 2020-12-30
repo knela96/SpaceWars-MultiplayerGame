@@ -273,19 +273,21 @@ void ModuleNetworkingServer::onUpdate()
 				// TODO(you): World state replication lab session
 				clientProxy.secondsSinceLastReplication += Time.deltaTime;
 
-				if (clientProxy.secondsSinceLastReplication >= REPLICATION_INTERVAL_SECONDS && !clientProxy.replicationManagerServer.commands.empty())
+				if (clientProxy.secondsSinceLastReplication >= REPLICATION_INTERVAL_SECONDS)
 				{
 					OutputMemoryStream packet;
 					packet << PROTOCOL_ID;
 					packet << ServerMessage::Replication;
 					packet << clientProxy.lastInputSequenceNumberReceived;
 
-					//if (!clientProxy.replicationManagerServer.commands.empty()) {
-						Delivery* delivery = clientProxy.deliveryManager.writeSequenceNumber(packet);
-						ReplicationDeliveryDelegate* _delegate = new ReplicationDeliveryDelegate(&clientProxy.replicationManagerServer);
-						delivery->d_delegate = _delegate;
+					Delivery* delivery = clientProxy.deliveryManager.writeSequenceNumber(packet);
+					ReplicationDeliveryDelegate* _delegate = new ReplicationDeliveryDelegate(&clientProxy.replicationManagerServer);
+					delivery->d_delegate = _delegate;
+
+					if (!clientProxy.replicationManagerServer.commands.empty()) {
 						clientProxy.replicationManagerServer.write(packet, _delegate);
-					//}
+					}
+
 					sendPacket(packet, clientProxy.address);
 
 					clientProxy.secondsSinceLastReplication = 0.0f;

@@ -158,20 +158,24 @@ void ModuleNetworkingClient::onPacketReceived(const InputMemoryStream &packet, c
 		{
 			ReplicationManagerClient manager;
 			uint32 currentRequest = 0;
-			packet >> currentRequest;
+			uint32 packetsequenceNumber = 0;
 			packet >> currentRequest;
 
-			manager.read(packet);
-			InputReconciliation(currentRequest, packet);
+			if (deliveryManager.processSequenceNumber(packet)) {
+				manager.read(packet);
+				InputReconciliation(currentRequest, packet);
 
-			if (deliveryManager.hasSequenceNumbersPendingAck())
-			{
-				OutputMemoryStream acknowledgementPacket;
-				acknowledgementPacket << PROTOCOL_ID;
-				acknowledgementPacket << ClientMessage::ACK;
-				deliveryManager.writeSequenceNumbersPendingAck(acknowledgementPacket);
-				sendPacket(acknowledgementPacket, fromAddress);
+				if (deliveryManager.hasSequenceNumbersPendingAck())
+				{
+					OutputMemoryStream acknowledgementPacket;
+					acknowledgementPacket << PROTOCOL_ID;
+					acknowledgementPacket << ClientMessage::ACK;
+					deliveryManager.writeSequenceNumbersPendingAck(acknowledgementPacket);
+					sendPacket(acknowledgementPacket, fromAddress);
+				}
 			}
+
+			
 		}
 		else if (message == ServerMessage::Input)
 		{
@@ -259,9 +263,6 @@ void ModuleNetworkingClient::onUpdate()
 			OutputMemoryStream packet;
 			packet << PROTOCOL_ID;
 			packet << ClientMessage::Input;
-
-			//ReplicationDeliveryDelegate* _delegate = new ReplicationDeliveryDelegate();
-			//Delivery* delivery = deliveryManager.writeSequenceNumber(packet, _delegate);
 
 			// TODO(you): Reliability on top of UDP lab session
 			for (uint32 i = inputDataFront; i < inputDataBack; ++i)
