@@ -27,7 +27,7 @@ public:
 	void update(uint32 networkId);
 	void destroy(uint32 networkId);
 
-	void write(OutputMemoryStream & packet, ReplicationDeliveryDelegate* _delegate);
+	void write(OutputMemoryStream & packet, ReplicationDeliveryDelegate* _delegate, DeliveryManager* deliveryManager);
 
 	std::map<uint32, ReplicationAction> commands;
 };

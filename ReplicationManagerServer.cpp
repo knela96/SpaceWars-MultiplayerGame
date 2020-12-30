@@ -16,7 +16,7 @@ void ReplicationManagerServer::destroy(uint32 networkId)
 	commands[networkId] = ReplicationAction::Destroy;
 }
 
-void ReplicationManagerServer::write(OutputMemoryStream& packet, ReplicationDeliveryDelegate* _delegate)
+void ReplicationManagerServer::write(OutputMemoryStream& packet, ReplicationDeliveryDelegate* _delegate, DeliveryManager* deliveryManager)
 {
 	for (auto command : commands)
 	{
@@ -34,6 +34,7 @@ void ReplicationManagerServer::write(OutputMemoryStream& packet, ReplicationDeli
 		}
 		ReplicationCommand newCommand = ReplicationCommand(command.second/*action*/, command.first/*networkID*/);
 		_delegate->AddCommand(ReplicationCommand(command.second/*action*/, command.first/*networkID*/));
+		deliveryManager->replicationCommands.push_back(ReplicationCommand(command.second/*action*/, command.first/*networkID*/));
 	}
 	commands.clear();
 	
@@ -46,7 +47,7 @@ ReplicationDeliveryDelegate::ReplicationDeliveryDelegate(ReplicationManagerServe
 
 void ReplicationDeliveryDelegate::onDeliveryFailure(DeliveryManager* deliveryManager)
 {
-	for (const ReplicationCommand& replicationCommand : replicationCommands)
+	for (const ReplicationCommand& replicationCommand : deliveryManager->replicationCommands)
 	{
 		switch (replicationCommand.action)
 		{
