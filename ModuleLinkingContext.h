@@ -18,6 +18,9 @@ public:
 
 	void clear();
 
+public:
+
+	uint16 arrayIndexFromNetworkId(uint32 networkId);
 private:
 
 	// NOTE(jesus): The networkId of a gameObject is the combination of
@@ -35,7 +38,6 @@ private:
 	uint32 nextMagicNumber = 1;
 
 	uint32 makeNetworkId(uint16 arrayIndex);
-	uint16 arrayIndexFromNetworkId(uint32 networkId);
 
 	GameObject *networkGameObjects[MAX_NETWORK_OBJECTS] = {};
 

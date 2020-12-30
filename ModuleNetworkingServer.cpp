@@ -116,7 +116,6 @@ void ModuleNetworkingServer::onPacketReceived(const InputMemoryStream &packet, c
 					}
 				}
 
-
 				proxy = createClientProxy();
 
 				if (proxy != nullptr)
@@ -131,7 +130,6 @@ void ModuleNetworkingServer::onPacketReceived(const InputMemoryStream &packet, c
 					proxy->name = playerName;
 					proxy->clientId = nextClientId++;
 					proxy->score = 0;
-
 
 					// Create new network object
 					vec2 initialPosition = 500.0f * vec2{ Random.next() - 0.5f, Random.next() - 0.5f};
@@ -177,11 +175,12 @@ void ModuleNetworkingServer::onPacketReceived(const InputMemoryStream &packet, c
 			if (proxy != nullptr && IsValid(proxy->gameObject))
 			{
 				// TODO(you): Reliability on top of UDP lab session
+				//proxy->deliveryManager.processSequenceNumber(packet);
+				
 				// Read input data
 				while (packet.RemainingByteCount() > 0)
 				{
 					InputPacketData inputData;
-					//packet >> ;
 					packet >> inputData.sequenceNumber;
 					packet >> inputData.horizontalAxis;
 					packet >> inputData.verticalAxis;
@@ -197,12 +196,22 @@ void ModuleNetworkingServer::onPacketReceived(const InputMemoryStream &packet, c
 						proxy->nextExpectedInputSequenceNumber = inputData.sequenceNumber + 1;
 					}
 				}
+				OutputMemoryStream inputAcknowledgement;
+				inputAcknowledgement << PROTOCOL_ID;
+				inputAcknowledgement << ServerMessage::Input;
+				inputAcknowledgement << proxy->nextExpectedInputSequenceNumber;
+				sendPacket(inputAcknowledgement, fromAddress);
 			}
 		}
 		else if (message == ClientMessage::Ping)
 		{
 			if (proxy != nullptr)
 				proxy->secondsSinceLastReceivedPacket = 0.0f;
+		}
+		else if (message == ClientMessage::ACK)
+		{
+		if (proxy)
+			proxy->deliveryManager.processAckSequenceNumbers(packet);
 		}
 	}
 }
@@ -249,7 +258,7 @@ void ModuleNetworkingServer::onUpdate()
 					OutputMemoryStream packet;
 					packet << PROTOCOL_ID;
 					packet << ServerMessage::Ping;
-
+					
 					sendPacket(packet, clientProxy.address);
 
 					clientProxy.secondsSinceLastSendPacket = 0.0f;
@@ -271,8 +280,13 @@ void ModuleNetworkingServer::onUpdate()
 					packet << ServerMessage::Replication;
 					packet << clientProxy.lastInputSequenceNumberReceived;
 
-					if (!clientProxy.replicationManagerServer.commands.empty())
-						clientProxy.replicationManagerServer.write(packet);
+					Delivery* delivery = clientProxy.deliveryManager.writeSequenceNumber(packet);
+					ReplicationDeliveryDelegate* _delegate = new ReplicationDeliveryDelegate(&clientProxy.replicationManagerServer);
+					delivery->d_delegate = _delegate;
+
+					if (!clientProxy.replicationManagerServer.commands.empty()) {
+						clientProxy.replicationManagerServer.write(packet, _delegate);
+					}
 
 					sendPacket(packet, clientProxy.address);
 
@@ -295,8 +309,7 @@ void ModuleNetworkingServer::onUpdate()
 					sendPacket(scorepacket, clientProxy.address);
 					clientProxy.secondsSinceLastScore = 0.0f;
 				}
-
-
+				clientProxy.deliveryManager.processTimedOutPackets();
 			}
 		}
 	}
@@ -326,6 +339,7 @@ void ModuleNetworkingServer::onDisconnect()
 
 	for (ClientProxy &clientProxy : clientProxies)
 	{
+		clientProxy.deliveryManager.clear();
 		destroyClientProxy(&clientProxy);
 	}
 

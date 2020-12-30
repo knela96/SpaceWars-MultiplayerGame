@@ -158,10 +158,31 @@ void ModuleNetworkingClient::onPacketReceived(const InputMemoryStream &packet, c
 		{
 			ReplicationManagerClient manager;
 			uint32 currentRequest = 0;
+			uint32 packetsequenceNumber = 0;
 			packet >> currentRequest;
 
-			manager.read(packet);
-			InputReconciliation(currentRequest, packet);
+			if (deliveryManager.processSequenceNumber(packet)) {
+				manager.read(packet);
+				InputReconciliation(currentRequest, packet);
+
+				if (deliveryManager.hasSequenceNumbersPendingAck())
+				{
+					OutputMemoryStream acknowledgementPacket;
+					acknowledgementPacket << PROTOCOL_ID;
+					acknowledgementPacket << ClientMessage::ACK;
+					deliveryManager.writeSequenceNumbersPendingAck(acknowledgementPacket);
+					sendPacket(acknowledgementPacket, fromAddress);
+				}
+			}
+		}
+		else if (message == ServerMessage::Input)
+		{
+			uint32 sequenceNumber;
+			packet >> sequenceNumber;
+
+			if (sequenceNumber > inputDataFront)
+				inputDataFront = sequenceNumber;
+
 		}
 		else if (message == ServerMessage::Score)
 		{
@@ -249,10 +270,9 @@ void ModuleNetworkingClient::onUpdate()
 				packet << inputPacketData.horizontalAxis;
 				packet << inputPacketData.verticalAxis;
 				packet << inputPacketData.buttonBits;
-			}
-			//Delivery* delivery = deliveryManager.writeSequenceNumber(packet);
-			
+
 			sendPacket(packet, serverAddress);
+			}
 		}
 
 		secondsSinceLastSendPacket += Time.deltaTime;
@@ -277,7 +297,7 @@ void ModuleNetworkingClient::onUpdate()
 		}
 		else if(spawned && playerGameObject == nullptr)
 		{
-			disconnect();
+  			disconnect();
 		}
 	}
 }
@@ -302,6 +322,8 @@ void ModuleNetworkingClient::onDisconnect()
 	}
 
 	App->modRender->cameraPosition = {};
+
+	deliveryManager.clear();
 }
 
 void ModuleNetworkingClient::InputReconciliation(const uint32& currentRequest, const InputMemoryStream& packet) {

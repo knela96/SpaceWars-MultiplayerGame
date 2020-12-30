@@ -1,16 +1,14 @@
 #include "Networks.h"
 #include "DeliveryManager.h"
 
-Delivery* DeliveryManager::writeSequenceNumber(OutputMemoryStream& packet, DeliveryDelegate* _delegate)
+Delivery* DeliveryManager::writeSequenceNumber(OutputMemoryStream& packet)
 {
-
 	packet << nextSequenceNumber;
 
 	Delivery* delivery = new Delivery();
 
 	delivery->dispatchTime = Time.time;
-	delivery->sequenceNumber = ++nextSequenceNumber;
-	delivery->d_delegate = _delegate;
+	delivery->sequenceNumber = nextSequenceNumber++;
 
 	pendingDeliveries.push_back(delivery);
 
@@ -21,9 +19,9 @@ bool DeliveryManager::processSequenceNumber(const InputMemoryStream& packet)
 {
 	uint32 receivedSequenceNumber = 0;
 	packet >> receivedSequenceNumber;
-	if (expectedSequenceNumber == receivedSequenceNumber) {
+	if (receivedSequenceNumber >= expectedSequenceNumber) {
 		pendingAckDeliveries.push_back(receivedSequenceNumber);
-		++expectedSequenceNumber;
+		expectedSequenceNumber = receivedSequenceNumber + 1;
 		return true;
 	}
 
@@ -79,7 +77,6 @@ void DeliveryManager::processTimedOutPackets()
 			{
 				pendingDeliveries[i]->d_delegate->onDeliveryFailure(this);
 			}
-
 			deliveryIndexToDelete.push_back(i);
 		}
 	}

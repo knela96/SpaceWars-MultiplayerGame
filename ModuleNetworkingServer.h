@@ -35,6 +35,7 @@ class ModuleNetworkingServer : public ModuleNetworking
 		InputController gamepad;
 
 		ReplicationManagerServer replicationManagerServer;
+		DeliveryManager deliveryManager;
 	};
 
 	ClientProxy clientProxies[MAX_CLIENTS];

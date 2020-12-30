@@ -25,7 +25,7 @@ class DeliveryManager {
 public:
 
 	// For senders to write a new seq. numbers into a packet
-	Delivery* writeSequenceNumber(OutputMemoryStream& packet, DeliveryDelegate* _delegate);
+	Delivery* writeSequenceNumber(OutputMemoryStream& packet);
 
 	//For receivers to process the seq. number from an incoming packet
 	bool processSequenceNumber(const InputMemoryStream& packet);
