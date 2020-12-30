@@ -14,7 +14,8 @@ SpaceWars is a 8 Players 2D Multiplayer Battleroyale game where the players will
  	Space - Fire
 
 ## Authors: 
-[Èric Canela](https://github.com/knela96) & [Joan Marin](https://github.com/X0KA)
+[Èric Canela](https://github.com/knela96) 
+[Joan Marin](https://github.com/X0KA)
 
 # Implementations
 ### Èric:
@@ -32,5 +33,9 @@ SpaceWars is a 8 Players 2D Multiplayer Battleroyale game where the players will
 	- All Game Mechanics (Scores,Spaceship Level Up,Restore Life)
 
 ### Joan:
-	- Packets Redundancy
-	- Delivery Manager
+	- Packets Redundancy 	(completely achieved)
+	- Delivery Manager 	(Achieved but there are some BUGS present: sometimes, when a packet has to be resent, 
+				the server might give a wrong position for the replacement of the object in the array, asuming it's empty, 
+				but it's actually occupied in the client. Sometimes, it might be even occupied by the ship. And since 
+				the server is autoritharian, the object that was in the array and must be replaced is destroyed, 
+				and because of that, sometimes, the ship is destroyed, so the client will exit the app.
