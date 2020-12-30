@@ -3,7 +3,6 @@
 #include <vector>
 
 class DeliveryManager;
-class ReplicationCommand;
 
 class DeliveryDelegate {
 public:
@@ -40,12 +39,8 @@ public:
 	void processTimedOutPackets();
 
 	void clear();
-public:
-
-	std::vector<ReplicationCommand> replicationCommands; 
 
 private:
-
 
 	uint32 nextSequenceNumber = 0;
 	std::vector<Delivery*> pendingDeliveries;

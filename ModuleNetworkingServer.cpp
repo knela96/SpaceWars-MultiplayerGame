@@ -285,7 +285,7 @@ void ModuleNetworkingServer::onUpdate()
 					delivery->d_delegate = _delegate;
 
 					if (!clientProxy.replicationManagerServer.commands.empty()) {
-						clientProxy.replicationManagerServer.write(packet, _delegate, &clientProxy.deliveryManager);
+						clientProxy.replicationManagerServer.write(packet, _delegate);
 					}
 
 					sendPacket(packet, clientProxy.address);
