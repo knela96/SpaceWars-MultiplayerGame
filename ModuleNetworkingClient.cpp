@@ -164,18 +164,7 @@ void ModuleNetworkingClient::onPacketReceived(const InputMemoryStream &packet, c
 			if (deliveryManager.processSequenceNumber(packet)) {
 				manager.read(packet);
 				InputReconciliation(currentRequest, packet);
-
-				if (deliveryManager.hasSequenceNumbersPendingAck())
-				{
-					OutputMemoryStream acknowledgementPacket;
-					acknowledgementPacket << PROTOCOL_ID;
-					acknowledgementPacket << ClientMessage::ACK;
-					deliveryManager.writeSequenceNumbersPendingAck(acknowledgementPacket);
-					sendPacket(acknowledgementPacket, fromAddress);
-				}
 			}
-
-			
 		}
 		else if (message == ServerMessage::Input)
 		{
@@ -301,6 +290,15 @@ void ModuleNetworkingClient::onUpdate()
 		{
 			disconnect();
 		}
+
+		if (deliveryManager.hasSequenceNumbersPendingAck())
+		{
+			OutputMemoryStream acknowledgementPacket;
+			acknowledgementPacket << PROTOCOL_ID;
+			acknowledgementPacket << ClientMessage::ACK;
+			deliveryManager.writeSequenceNumbersPendingAck(acknowledgementPacket);
+			sendPacket(acknowledgementPacket, serverAddress);
+		}
 	}
 }
 
@@ -324,6 +322,8 @@ void ModuleNetworkingClient::onDisconnect()
 	}
 
 	App->modRender->cameraPosition = {};
+
+	deliveryManager.clear();
 }
 
 void ModuleNetworkingClient::InputReconciliation(const uint32& currentRequest, const InputMemoryStream& packet) {
