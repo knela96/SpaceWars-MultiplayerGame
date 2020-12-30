@@ -13,7 +13,6 @@ void ReplicationManagerClient::read(const InputMemoryStream& packet)
 		if (action == ReplicationAction::Create) {
 			GameObject* go = Instantiate();
 			App->modLinkingContext->registerNetworkGameObjectWithNetworkId(go, networkID);
-
 			readGO(go, packet, ReplicationAction::Create);
 		}
 		else if (action == ReplicationAction::Update)

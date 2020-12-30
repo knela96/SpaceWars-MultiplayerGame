@@ -164,6 +164,15 @@ void ModuleNetworkingClient::onPacketReceived(const InputMemoryStream &packet, c
 			if (deliveryManager.processSequenceNumber(packet)) {
 				manager.read(packet);
 				InputReconciliation(currentRequest, packet);
+
+				if (deliveryManager.hasSequenceNumbersPendingAck())
+				{
+					OutputMemoryStream acknowledgementPacket;
+					acknowledgementPacket << PROTOCOL_ID;
+					acknowledgementPacket << ClientMessage::ACK;
+					deliveryManager.writeSequenceNumbersPendingAck(acknowledgementPacket);
+					sendPacket(acknowledgementPacket, fromAddress);
+				}
 			}
 		}
 		else if (message == ServerMessage::Input)
@@ -288,16 +297,7 @@ void ModuleNetworkingClient::onUpdate()
 		}
 		else if(spawned && playerGameObject == nullptr)
 		{
-			disconnect();
-		}
-
-		if (deliveryManager.hasSequenceNumbersPendingAck())
-		{
-			OutputMemoryStream acknowledgementPacket;
-			acknowledgementPacket << PROTOCOL_ID;
-			acknowledgementPacket << ClientMessage::ACK;
-			deliveryManager.writeSequenceNumbersPendingAck(acknowledgementPacket);
-			sendPacket(acknowledgementPacket, serverAddress);
+  			disconnect();
 		}
 	}
 }

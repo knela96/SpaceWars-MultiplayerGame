@@ -30,9 +30,9 @@ void ReplicationManagerServer::write(OutputMemoryStream& packet, ReplicationDeli
 		else if(command.second == ReplicationAction::Update)
 		{
 			GameObject* go = App->modLinkingContext->getNetworkGameObject(command.first);
+			if(go)
 			writeGO(go, packet, ReplicationAction::Update);
 		}
-		ReplicationCommand newCommand = ReplicationCommand(command.second/*action*/, command.first/*networkID*/);
 		_delegate->AddCommand(ReplicationCommand(command.second/*action*/, command.first/*networkID*/));
 	}
 	commands.clear();
@@ -54,13 +54,13 @@ void ReplicationDeliveryDelegate::onDeliveryFailure(DeliveryManager* deliveryMan
 			if (App->modLinkingContext->getNetworkGameObject(replicationCommand.networkId) != nullptr)
 				replicationManagerServer->create(replicationCommand.networkId);
 			break;
-		case ReplicationAction::Destroy:
-			if (App->modLinkingContext->getNetworkGameObject(replicationCommand.networkId) != nullptr)
-				replicationManagerServer->update(replicationCommand.networkId);
-			break;
 		case ReplicationAction::Update:
 			if (App->modLinkingContext->getNetworkGameObject(replicationCommand.networkId) != nullptr)
 				replicationManagerServer->destroy(replicationCommand.networkId);
+			break;
+		case ReplicationAction::Destroy:
+			if (App->modLinkingContext->getNetworkGameObject(replicationCommand.networkId) == nullptr)
+				replicationManagerServer->update(replicationCommand.networkId);
 			break;
 		}
 	}

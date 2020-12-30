@@ -19,9 +19,9 @@ bool DeliveryManager::processSequenceNumber(const InputMemoryStream& packet)
 {
 	uint32 receivedSequenceNumber = 0;
 	packet >> receivedSequenceNumber;
-	if (expectedSequenceNumber == receivedSequenceNumber) {
+	if (receivedSequenceNumber >= expectedSequenceNumber) {
 		pendingAckDeliveries.push_back(receivedSequenceNumber);
-		++expectedSequenceNumber;
+		expectedSequenceNumber = receivedSequenceNumber + 1;
 		return true;
 	}
 
