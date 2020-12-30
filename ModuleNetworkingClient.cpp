@@ -159,9 +159,28 @@ void ModuleNetworkingClient::onPacketReceived(const InputMemoryStream &packet, c
 			ReplicationManagerClient manager;
 			uint32 currentRequest = 0;
 			packet >> currentRequest;
+			packet >> currentRequest;
 
 			manager.read(packet);
 			InputReconciliation(currentRequest, packet);
+
+			if (deliveryManager.hasSequenceNumbersPendingAck())
+			{
+				OutputMemoryStream acknowledgementPacket;
+				acknowledgementPacket << PROTOCOL_ID;
+				acknowledgementPacket << ClientMessage::ACK;
+				deliveryManager.writeSequenceNumbersPendingAck(acknowledgementPacket);
+				sendPacket(acknowledgementPacket, fromAddress);
+			}
+		}
+		else if (message == ServerMessage::Input)
+		{
+			uint32 sequenceNumber;
+			packet >> sequenceNumber;
+
+			if (sequenceNumber > inputDataFront)
+				inputDataFront = sequenceNumber;
+
 		}
 		else if (message == ServerMessage::Score)
 		{
@@ -241,6 +260,9 @@ void ModuleNetworkingClient::onUpdate()
 			packet << PROTOCOL_ID;
 			packet << ClientMessage::Input;
 
+			//ReplicationDeliveryDelegate* _delegate = new ReplicationDeliveryDelegate();
+			//Delivery* delivery = deliveryManager.writeSequenceNumber(packet, _delegate);
+
 			// TODO(you): Reliability on top of UDP lab session
 			for (uint32 i = inputDataFront; i < inputDataBack; ++i)
 			{
@@ -249,10 +271,9 @@ void ModuleNetworkingClient::onUpdate()
 				packet << inputPacketData.horizontalAxis;
 				packet << inputPacketData.verticalAxis;
 				packet << inputPacketData.buttonBits;
-			}
-			//Delivery* delivery = deliveryManager.writeSequenceNumber(packet);
-			
+
 			sendPacket(packet, serverAddress);
+			}
 		}
 
 		secondsSinceLastSendPacket += Time.deltaTime;

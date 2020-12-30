@@ -1,16 +1,14 @@
 #include "Networks.h"
 #include "DeliveryManager.h"
 
-Delivery* DeliveryManager::writeSequenceNumber(OutputMemoryStream& packet, DeliveryDelegate* _delegate)
+Delivery* DeliveryManager::writeSequenceNumber(OutputMemoryStream& packet)
 {
-
 	packet << nextSequenceNumber;
 
 	Delivery* delivery = new Delivery();
 
 	delivery->dispatchTime = Time.time;
 	delivery->sequenceNumber = ++nextSequenceNumber;
-	delivery->d_delegate = _delegate;
 
 	pendingDeliveries.push_back(delivery);
 
@@ -79,7 +77,6 @@ void DeliveryManager::processTimedOutPackets()
 			{
 				pendingDeliveries[i]->d_delegate->onDeliveryFailure(this);
 			}
-
 			deliveryIndexToDelete.push_back(i);
 		}
 	}
