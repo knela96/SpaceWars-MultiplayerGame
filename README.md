@@ -34,7 +34,7 @@ SpaceWars is a 8 Players 2D Multiplayer Battleroyale game where the players will
 
 ### Joan:
 	- Packets Redundancy 	(completely achieved)
-	- Delivery Manager 	(Achieved but there are some BUGS present: sometimes, when a packet has to be resent, 
+	- Delivery Manager 	(Achieved but there are some BUGS present: sometimes, when a packet has to be resent (because it was dropped), 
 				the server might give a wrong position for the replacement of the object in the array, asuming it's empty, 
 				but it's actually occupied in the client. Sometimes, it might be even occupied by the ship. And since 
 				the server is autoritharian, the object that was in the array and must be replaced is destroyed, 
