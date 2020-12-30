@@ -33,13 +33,14 @@ SpaceWars is a 8 Players 2D Multiplayer Battleroyale game where the players will
 	- All Game Mechanics (Scores,Spaceship Level Up,Restore Life)
 
 ### Joan:
-	- Packets Redundancy 	(Completely achieved)
+	- Packets Redundancy (Completely achieved)
 		Each client will send the inputs from the players multiple times (if needed) to the server to make sure 
 		all of them are read. The server keeps track of the last inputs sent by each client, so no rebundant 
 		inputs are sent).
 	- Delivery Manager 	(Achieved but there are some BUGS present)
-		
-		
+		In order to manage input packet drops, input packets will be grouped in deliveries. When the client 
+		sends these deliveries, it will store them in a list. When the server receives them, will notify the 
+		client. If the client is not told that those deliveries where succesfully sent, it will send them again.
 	
 ## Known Bugs:
 	- Sometimes, when a packet has to be resent (because it was dropped), the server might give a wrong position 
